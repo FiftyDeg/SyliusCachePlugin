@@ -1,0 +1,5 @@
+framework:
+    assets:
+        packages:
+            fiftyDegCacheAdmin:
+                json_manifest_path: '%kernel.project_dir%/public/fiftydeg-cache/admin/manifest.json'

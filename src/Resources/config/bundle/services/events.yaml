@@ -1,0 +1,5 @@
+services:
+    fifty_deg.sylius_cache_plugin.menu.admin_menu_listener:
+        class: FiftyDeg\SyliusCachePlugin\Menu\AdminMenuListener
+        tags:
+            - { name: kernel.event_listener, event: sylius.menu.admin.main, method: addShopSettingsMenu }

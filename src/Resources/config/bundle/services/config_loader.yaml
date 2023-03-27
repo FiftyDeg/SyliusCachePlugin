@@ -1,0 +1,6 @@
+services:
+    fifty_deg.sylius_cache_plugin.config_loader.config_loader:
+        class: FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoader
+        arguments:
+            - '@parameter_bag'
+        tags: [controller.service_arguments]

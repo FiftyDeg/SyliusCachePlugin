@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Acme\SyliusExamplePlugin\DependencyInjection;
+namespace FiftyDeg\SyliusCachePlugin\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -14,8 +14,27 @@ final class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('acme_sylius_example_plugin');
+        $treeBuilder = new TreeBuilder('fifty_deg_sylius_cache');
+
+        /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $treeBuilder->getRootNode();
+        $rootNode
+            ->children()
+                ->booleanNode('is_cache_enabled')
+                    ->defaultValue(true)
+                ->end()
+                ->arrayNode('cacheable_sylius_template_events')
+                    ->arrayPrototype()
+                        ->children()
+                            ->scalarNode('name')
+                            ->end()
+                            ->scalarNode('ttl')
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
 
         return $treeBuilder;
     }
