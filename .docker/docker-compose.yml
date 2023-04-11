@@ -48,7 +48,10 @@ services:
     command: >
         bash -c
         "composer install --no-interaction --no-scripts
+        && echo Update chown
         && chown $HOST_UID:$HOST_GID -R ./vendor 
+        && echo Create node symlink
+        && yes | php bin/create_node_symlink.php
         && cd ./tests/Application
         && mkdir -p ./var/log ./var/cache ./public/media/cache ./public/media/image
         && chown $HOST_UID:$HOST_GID -R ./var
@@ -100,7 +103,7 @@ services:
     command: >
         bash -c 
         "cd ./tests/Application 
-        && yarn 
+        && yarn
         && GULP_ENV=prod yarn watch"
 
 networks:
