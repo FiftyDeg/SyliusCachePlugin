@@ -1,11 +1,9 @@
 app_admin_fifty_deg_cache_index:
     path: /admin/fiftydeg-cache/index/
     methods: [ GET ]
-    defaults:
-        _controller: fifty_deg.sylius_cache_plugin.controller.cache_flusher_controller:indexAction
+    controller: fifty_deg.sylius_cache_plugin.controller.cache_flusher_controller::indexAction
 
 app_admin_fifty_deg_cache_flusher_ajax:
     path: /admin/fiftydeg-cache/flush/
     methods: [ POST ]
-    defaults:
-        _controller: fifty_deg.sylius_cache_plugin.controller.cache_flusher_controller:flushAction
+    controller: fifty_deg.sylius_cache_plugin.controller.cache_flusher_controller::flushAction

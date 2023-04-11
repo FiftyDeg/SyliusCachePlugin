@@ -1,2 +1,2 @@
-fiftydeg_sylius_cache_plugin:
+fifty_deg_sylius_cache_plugin:
     resource: "@FiftyDegSyliusCachePlugin/Resources/config/routes.yaml"
