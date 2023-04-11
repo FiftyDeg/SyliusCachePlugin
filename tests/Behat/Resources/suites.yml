@@ -2,9 +2,43 @@
 
 default:
     suites:
-        greeting_customer:
+        hitting_cache:
             contexts:
-                - acme_sylius_example.context.ui.shop.welcome
+                # By using sylius.behat.context.hook.doctrine_orm, each time you run a test all DB tables are truncated.
+                # - sylius.behat.context.hook.doctrine_orm
+                - sylius.behat.context.setup.channel
+                - sylius.behat.context.setup.product
+                - sylius.behat.context.setup.customer
+                - sylius.behat.context.setup.shop_security
+                - sylius.behat.context.transform.lexical
+                - sylius.behat.context.transform.product
+                - sylius.behat.context.transform.channel
+                # - sylius.behat.context.ui.shop.product
+                # - sylius.behat.context.ui.shop.cart
+                - sylius.behat.context.ui.shop.homepage
+
+                - fiftydeg_sylius_cache_plugin.context.ui.shop.home_page_hit_cache_context
 
             filters:
-                tags: "@greeting_customer"
+                tags: "@hitting_cache&&@ui"
+
+        
+        missing_cache:
+            contexts:
+                # By using sylius.behat.context.hook.doctrine_orm, each time you run a test all DB tables are truncated.
+                # - sylius.behat.context.hook.doctrine_orm
+                - sylius.behat.context.setup.channel
+                - sylius.behat.context.setup.product
+                - sylius.behat.context.setup.customer
+                - sylius.behat.context.setup.shop_security
+                - sylius.behat.context.transform.lexical
+                - sylius.behat.context.transform.product
+                - sylius.behat.context.transform.channel
+                # - sylius.behat.context.ui.shop.product
+                # - sylius.behat.context.ui.shop.cart
+                - sylius.behat.context.ui.shop.homepage
+
+                - fiftydeg_sylius_cache_plugin.context.ui.shop.home_page_miss_cache_context
+
+            filters:
+                tags: "@missing_cache&&@ui"
