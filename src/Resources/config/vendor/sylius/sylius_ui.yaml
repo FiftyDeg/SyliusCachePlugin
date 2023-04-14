@@ -1,0 +1,7 @@
+sylius_ui:
+    events:
+        sylius.admin.layout.javascripts:
+            blocks:
+                fiftydeg_cache_scripts:
+                    template: "@FiftyDegSyliusCachePlugin/Admin/_scripts.html.twig"
+                    priority: 10

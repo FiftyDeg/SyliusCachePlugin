@@ -1,0 +1,36 @@
+{% extends '@SyliusAdmin/layout.html.twig' %}
+
+{% block title %}
+	Cache
+	{{ parent() }}
+{% endblock %}
+
+{% block content %}
+	<div class="ui stackable grid">
+		<div class="twelve wide column">
+			<h1 class="ui header">
+				<i class="circular disk icon"></i>
+				<div class="content">
+					Flush cache
+					<div class="sub header">Tools to flush FiftyDeg Custom Cache</div>
+				</div>
+			</h1>
+		</div>
+		<div class="twelve wide column">
+			<div class="ui error message">
+				<h6 class="header">
+					Please, use these functionalities carefully.
+				</h6>
+                <p>
+				    Flush cache only if strictly necessary.
+                </p>
+			</div>
+		</div>
+		<div class="twelve wide column">
+            <button type="button" class="ui red button js__flushCacheButton" data-flush-cache-url="{{ url('app_admin_fifty_deg_cache_flusher_ajax') }}">Flush Cache</button>
+            <div class="js__flushCacheResponse">
+            </div>
+        </div>
+	</div>
+{% endblock %}
+

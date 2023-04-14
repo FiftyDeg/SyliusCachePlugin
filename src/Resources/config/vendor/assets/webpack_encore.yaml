@@ -1,0 +1,3 @@
+webpack_encore:
+    builds:
+        fiftyDegCacheAdmin: '%kernel.project_dir%/public/fiftydeg-cache/admin'
