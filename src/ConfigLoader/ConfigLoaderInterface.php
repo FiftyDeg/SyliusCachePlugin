@@ -6,7 +6,7 @@ namespace FiftyDeg\SyliusCachePlugin\ConfigLoader;
 
 interface ConfigLoaderInterface
 {
-    public function getCacheableSyliusTempalteEvents(): ?array;
+    public function getCacheableSyliusTemplateEvents(): ?array;
 
     public function isCacheEnabled(): bool;
 }

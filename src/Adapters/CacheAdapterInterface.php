@@ -18,6 +18,6 @@ interface CacheAdapterInterface {
     public function delete(string $key): bool;
 
     public function flush(): bool;
-
-    public function getCache(): ?FilesystemTagAwareAdapter;
 }
+
+//punto 5. private function safelySerialize(mixed $data): string

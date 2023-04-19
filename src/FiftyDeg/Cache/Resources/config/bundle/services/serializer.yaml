@@ -1,0 +1,3 @@
+services:
+    fifty_deg.sylius_cache_plugin.fifty_deg.cache.services.data_serializer:
+        class: FiftyDeg\SyliusCachePlugin\FiftyDeg\Cache\Services\DataSerializer

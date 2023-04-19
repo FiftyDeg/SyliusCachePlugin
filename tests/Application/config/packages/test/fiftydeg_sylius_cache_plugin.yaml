@@ -1,0 +1,6 @@
+fifty_deg_sylius_cache:
+    is_cache_enabled: true
+    cacheable_sylius_template_events:
+        name: 'sylius.shop.layout.footer'
+        ttl: 86400
+

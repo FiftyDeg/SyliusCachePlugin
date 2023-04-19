@@ -60,6 +60,7 @@ services:
         && yes | php bin/console sylius:install:check-requirements
         && yes | php bin/console sylius:install --no-interaction --verbose --env ${APP_ENV}
         && yes | php bin/console sylius:fixtures:load default --no-interaction
+        && yes | php bin/console sylius:debug:template-event
         && yes | php bin/console sylius:install:assets
         && yes | php bin/console sylius:theme:assets:install public
         && yes | php bin/console asset:install

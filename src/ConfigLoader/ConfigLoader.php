@@ -14,7 +14,7 @@ final class ConfigLoader implements ConfigLoaderInterface
     {
     }
 
-    public function getCacheableSyliusTempalteEvents(): array
+    public function getCacheableSyliusTemplateEvents(): array
     {
         return $this->getParam('cacheable_sylius_template_events') ?? [];
     }

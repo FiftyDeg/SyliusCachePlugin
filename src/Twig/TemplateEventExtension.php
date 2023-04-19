@@ -20,6 +20,7 @@ use Symfony\Bridge\Twig\AppVariable;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
+use FiftyDeg\SyliusCachePlugin\FiftyDeg\Cache\Services\DataSerializer;
 
 /**
  * @experimental
@@ -56,7 +57,9 @@ final class TemplateEventExtension extends AbstractExtension
             return $this->doRender($eventName, $context);
         }
 
-        $cacheKey = $this->safelySerialize($eventName) . $this->safelySerialize($context) . $cacheTtl;
+        $dataSerializer = new DataSerializer();
+
+        $cacheKey = $dataSerializer->safelySerialize($eventName) . $dataSerializer->safelySerialize($context) . $cacheTtl;
 
         $cacheValue = $this->cacheAdapter->get($cacheKey);
 
@@ -73,7 +76,9 @@ final class TemplateEventExtension extends AbstractExtension
 
     private function getTemplateEventCacheTtl(string $eventName): int
     {
-        $cacheableTemplateEvents = $this->configLoader->getCacheableSyliusTempalteEvents();
+        $cacheableTemplateEvents = $this->configLoader->getCacheableSyliusTemplateEvents();
+
+        //var_dump($cacheableTemplateEvents);
 
         foreach($cacheableTemplateEvents as $cacheSettings) {
             if ($cacheSettings['name'] === $eventName) {
@@ -93,39 +98,5 @@ final class TemplateEventExtension extends AbstractExtension
             : [$eventName];
 
         return $this->templateEventRenderer->render($eventNames, $context);
-    }
-
-    private function safelySerialize(mixed $data): string
-    {
-        if (is_string($data)) {
-            return serialize($data);
-        }
-
-        $serializable = [];
-
-        foreach ($data as $key => $val) {
-            if ($val instanceof RequestConfiguration) {
-                $serializable[$key] = $val->getRequest()->getPathInfo();
-
-                continue;
-            }
-
-            if ($val instanceof AppVariable) {
-                $serializable[$key] = $val->getEnvironment();
-
-                continue;
-            }
-
-            else {
-                try {
-                    $serializable[$key] = serialize($val);
-                } catch (Exception $e) {
-                    // This is a workaround to create a (non safe) cache key for data containing closures
-                    $serializable[$key] = $key . "-non-serializable";
-                }
-            }
-        }
-
-        return serialize($serializable);
     }
 }

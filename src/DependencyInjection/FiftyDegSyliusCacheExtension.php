@@ -18,7 +18,6 @@ final class FiftyDegSyliusCacheExtension extends Extension
     public function load(array $config, ContainerBuilder $container)
     {
         $config = $this->processConfiguration($this->getConfiguration([], $container), $config);
-
         $fileLocator = new FileLocator(__DIR__ . "/../Resources/config");
         $loader = new YamlFileLoader($container, $fileLocator);
         $loader->load('config_bundle.yaml');
@@ -26,5 +25,14 @@ final class FiftyDegSyliusCacheExtension extends Extension
         foreach ($config as $key => $param) {
             $container->setParameter($key, $param);
         }
+
+        $xml = simplexml_load_string(file_get_contents(__DIR__ . "/../Resources/config/bundle/services/template_event.xml"));// or die("Error: Cannot create object");
+
+        foreach($xml->services as $service) {
+            foreach($service as $serviceData) {
+                //var_dump($serviceData);
+            }
+        }
+        
     }
 }
