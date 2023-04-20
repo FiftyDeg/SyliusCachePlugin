@@ -40,10 +40,6 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function set(string $key, mixed $value, ?int $expiresAfter = null): bool
     {
-        if (!$this->isCacheEnabled()) {
-            return false;
-        }
-
         try {
             $hashedKey = $this->hashKey($key);
             $cacheItem = $this->cache->getItem($hashedKey);
@@ -62,10 +58,6 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function get(string $key): mixed
     {
-        if (!$this->isCacheEnabled()) {
-            return null;
-        }
-
         $hashedKey = $this->hashKey($key);
 
         $cacheItem = $this->cache->getItem($hashedKey);
@@ -95,14 +87,7 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function getCache(): ?FilesystemTagAwareAdapter
     {
-        return $this->isCacheEnabled()
-            ? $this->cache
-            : null;
-    }
-
-    private function isCacheEnabled()
-    {
-        return $this->configLoader->isCacheEnabled();
+        return $this->cache;
     }
 
     private function hashKey(string $key): string

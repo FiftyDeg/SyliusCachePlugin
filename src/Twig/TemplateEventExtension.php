@@ -20,7 +20,7 @@ use Symfony\Bridge\Twig\AppVariable;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-use FiftyDeg\SyliusCachePlugin\FiftyDeg\Cache\Services\DataSerializer;
+use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
 
 /**
  * @experimental
@@ -47,19 +47,24 @@ final class TemplateEventExtension extends AbstractExtension
      * @param array $context
      * @param int $cacheTtl
      */
-    public function render(string|array $eventName, array $context = [], int $cacheTtl = 0): string
+    public function render(string|array $eventName, array $context = [], int $cacheTtl = -1): string
     {
-        if (is_string($eventName) && empty($cacheTtl)) {
-            $cacheTtl = $this->getTemplateEventCacheTtl($eventName);
+        $dataSerializer = new DataSerializer();
+
+        $eventCacheEnabled = false;
+        if (is_string($eventName)) {
+            $checkEventCache = $this->configLoader->checkEventCache($eventName);
+            $eventCacheEnabled = $checkEventCache['cacheEnabled'];
+            if($cacheTtl === -1) {
+                $cacheTtl = $checkEventCache['ttl'];
+            }
         }
 
-        if (empty($cacheTtl)) {
+        if (!$eventCacheEnabled || $cacheTtl <= 0) {
             return $this->doRender($eventName, $context);
         }
 
-        $dataSerializer = new DataSerializer();
-
-        $cacheKey = $dataSerializer->safelySerialize($eventName) . $dataSerializer->safelySerialize($context) . $cacheTtl;
+        $cacheKey = $dataSerializer->buildCacheKey($eventName, $context, $cacheTtl);
 
         $cacheValue = $this->cacheAdapter->get($cacheKey);
 
@@ -72,21 +77,6 @@ final class TemplateEventExtension extends AbstractExtension
         $this->cacheAdapter->set($cacheKey, $renderedHtml, $cacheTtl);
 
         return $renderedHtml;
-    }
-
-    private function getTemplateEventCacheTtl(string $eventName): int
-    {
-        $cacheableTemplateEvents = $this->configLoader->getCacheableSyliusTemplateEvents();
-
-        //var_dump($cacheableTemplateEvents);
-
-        foreach($cacheableTemplateEvents as $cacheSettings) {
-            if ($cacheSettings['name'] === $eventName) {
-                return (int) $cacheSettings['ttl'];
-            }
-        }
-
-        return 0;
     }
 
     private function doRender(string|array $eventName, array $context = []): string

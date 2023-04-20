@@ -21,7 +21,108 @@ final class ConfigLoader implements ConfigLoaderInterface
 
     public function isCacheEnabled(): bool
     {
-        return $this->getParam('is_cache_enabled') ?? false;
+        return $this->getParam('is_cache_enabled');
+    }
+
+    private function getDefaultEventCacheEnabled(): bool
+    {
+        return $this->getParam('default_event_cache_enabled');
+    }
+
+    private function getDefaultEventBlockCacheEnabled(): bool
+    {
+        return $this->getParam('default_event_block_cache_enabled');
+    }
+
+    private function getDefaultEventCacheTtl(): int
+    {
+        return $this->getParam('default_event_cache_ttl');
+    }
+
+    private function getDefaultEventBlockCacheTtl(): int
+    {
+        return $this->getParam('default_event_block_cache_ttl');
+    }
+
+    public function checkEventCache(string $eventNameToSearchFor): array
+    {
+        $result =   [
+            'cacheEnabled' => false, 
+            'ttl' => 0
+        ];
+
+        if(!$this->isCacheEnabled()) {
+            return $result;
+        }
+
+        $result['cacheEnabled'] = $this->getDefaultEventCacheEnabled() && $this->isCacheEnabled();
+        $result['ttl' ] = $this->getDefaultEventCacheTtl();
+
+        $cacheableTemplateEvents = $this->getCacheableSyliusTemplateEvents();
+
+        foreach($cacheableTemplateEvents as $cacheSettings) {
+            if ($cacheSettings['name'] === $eventNameToSearchFor) {
+                if(isset($cacheSettings['is_cache_enabled'])) {
+                    $result['cacheEnabled'] = $cacheSettings['is_cache_enabled'];
+                }
+                if(isset($cacheSettings['ttl'])) {
+                    $result['ttl'] = (int)$cacheSettings['ttl'];
+                }
+
+                if (isset($cacheSettings['blocks'])
+                    && is_array($cacheSettings['blocks'])
+                    && count($cacheSettings['blocks']) > 0) {
+                    foreach($cacheSettings['blocks'] as $eventBlock) {
+                        if(!isset($eventBlock['is_cache_enabled'])
+                            || !$eventBlock['is_cache_enabled']) {
+                            $result['cacheEnabled'] = false;
+                            $result['ttl'] = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function checkEventBlockCache(
+        string $eventNameToSearchFor, 
+        string $blockNameToSearchFor): array
+    {
+        $result =   [
+            'cacheEnabled' => false, 
+            'ttl' => 0
+        ];
+
+        if(!$this->isCacheEnabled()) {
+            return $result;
+        }
+
+        $result['cacheEnabled'] = $this->getDefaultEventBlockCacheEnabled() && $this->isCacheEnabled();
+        $result['ttl' ] = $this->getDefaultEventBlockCacheTtl();
+
+        $cacheableTemplateEvents = $this->getCacheableSyliusTemplateEvents();
+
+        foreach($cacheableTemplateEvents as $cacheSettings) {
+            if ($cacheSettings['name'] === $eventNameToSearchFor
+                && isset($cacheSettings['blocks'])
+                && is_array($cacheSettings['blocks'])
+                && count($cacheSettings['blocks']) > 0) {
+                foreach($cacheSettings['blocks'] as $eventBlock) {
+                    if ($eventBlock['name'] === $blockNameToSearchFor) {
+                        if(isset($eventBlock['is_cache_enabled'])) {
+                            $result['cacheEnabled'] = $eventBlock['is_cache_enabled'];
+                        }
+                        if(isset($eventBlock['ttl'])) {
+                            $result['ttl'] = $eventBlock['ttl'];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 
     private function getParam(string $paramName): mixed
@@ -29,5 +130,12 @@ final class ConfigLoader implements ConfigLoaderInterface
         return $this->parameterBag->has($paramName)
             ? $this->parameterBag->get($paramName)
             : null;
+    }
+
+    public function shouldUseCache(array $result): bool {
+        if($result['cacheEnabled'] && $result['ttl'] > 0) {
+            return true;
+        }
+        return false;
     }
 }

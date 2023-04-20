@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FiftyDeg\SyliusCachePlugin\FiftyDeg\Cache\Services;
+namespace FiftyDeg\SyliusCachePlugin\Cache\Services;
 
 interface DataSerializerInterface
 {

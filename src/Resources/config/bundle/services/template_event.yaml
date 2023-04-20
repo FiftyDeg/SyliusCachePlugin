@@ -1,16 +1,10 @@
 services:
-    #Sylius\\Bundle\\UiBundle\\Renderer\\HtmlDebugTemplateBlockRenderer:
-    #Sylius\\Bundle\\UiBundle\\DataCollector\\TraceableTemplateBlockRenderer:
-    #Sylius\\Bundle\\UiBundle\\Renderer\\TemplateBlockRendererInterface:
-    #Sylius\\Bundle\\UiBundle\\Registry\\TemplateBlockRegistryInterface:
-    #Sylius\\Bundle\\UiBundle\\Renderer\\TemplateEventRendererInterface:
-    #Sylius\\Bundle\\UiBundle\\Command\\DebugTemplateEventCommand:
-    #Sylius\\Bundle\\UiBundle\\DataCollector\\TemplateBlockDataCollector:
-    #Sylius\\Bundle\\UiBundle\\DataCollector\\TraceableTemplateEventRenderer:
-    Sylius\\Bundle\\UiBundle\\Renderer\\HtmlDebugTemplateEventRenderer2:
-        class: FiftyDeg\SyliusCachePlugin\FiftyDeg\Cache\Renderer\TwigTemplateBlockRenderer22
+    FiftyDeg\SyliusCachePlugin\Cache\Renderer\TwigTemplateBlockRenderer:
+        decorates: Sylius\Bundle\UiBundle\DataCollector\TraceableTemplateBlockRenderer
         arguments:
             - '@twig'
-            - '@sylius.ui.template_event.context_provider'
             - '@fifty_deg.sylius_cache_plugin.adapters.cache_adapter'
-            - "@fifty_deg.sylius_cache_plugin.config_loader.config_loader"
+            - '@fifty_deg.sylius_cache_plugin.config_loader.config_loader'
+            - '@Sylius\Bundle\UiBundle\DataCollector\TemplateBlockRenderingHistory'
+            - '@FiftyDeg\SyliusCachePlugin\Cache\Renderer\TwigTemplateBlockRenderer.inner'
+            

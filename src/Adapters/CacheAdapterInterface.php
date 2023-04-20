@@ -19,5 +19,3 @@ interface CacheAdapterInterface {
 
     public function flush(): bool;
 }
-
-//punto 5. private function safelySerialize(mixed $data): string

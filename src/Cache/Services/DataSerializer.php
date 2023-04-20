@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace FiftyDeg\SyliusCachePlugin\FiftyDeg\Cache\Services;
+namespace FiftyDeg\SyliusCachePlugin\Cache\Services;
 
 final class DataSerializer implements DataSerializerInterface
 {
@@ -21,15 +21,14 @@ final class DataSerializer implements DataSerializerInterface
         $serializable = [];
 
         foreach ($data as $key => $val) {
+
             if ($val instanceof RequestConfiguration) {
                 $serializable[$key] = $val->getRequest()->getPathInfo();
-
                 continue;
             }
 
             if ($val instanceof AppVariable) {
                 $serializable[$key] = $val->getEnvironment();
-
                 continue;
             }
 
@@ -44,5 +43,9 @@ final class DataSerializer implements DataSerializerInterface
         }
 
         return serialize($serializable);
+    }
+
+    public function buildCacheKey($nameToUse, $context, $cacheTtl) {
+        return $this->safelySerialize($nameToUse) . $this->safelySerialize($context) . $cacheTtl;
     }
 }
