@@ -78,6 +78,9 @@ final class ConfigLoader implements ConfigLoaderInterface
 
         foreach($cacheableTemplateEvents as $cacheSettings) {
             if ($cacheSettings['name'] === $eventNameToSearchFor) {
+
+                $defaultEventBlockCacheEnabled = $cacheSettings['default_event_block_cache_enabled'];
+
                 if(isset($cacheSettings['is_cache_enabled'])) {
                     $result['cacheEnabled'] = $cacheSettings['is_cache_enabled'];
                 }
@@ -89,8 +92,8 @@ final class ConfigLoader implements ConfigLoaderInterface
                     && is_array($cacheSettings['blocks'])
                     && count($cacheSettings['blocks']) > 0) {
                     foreach($cacheSettings['blocks'] as $eventBlock) {
-                        if(!isset($eventBlock['is_cache_enabled'])
-                            || !$eventBlock['is_cache_enabled']) {
+                        if((isset($eventBlock['is_cache_enabled']) && !$eventBlock['is_cache_enabled'])
+                            || (!isset($eventBlock['is_cache_enabled']) && !$defaultEventBlockCacheEnabled)) {
                             $result['cacheEnabled'] = false;
                             $result['ttl'] = 0;
                         }
