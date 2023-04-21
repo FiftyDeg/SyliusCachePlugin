@@ -150,6 +150,11 @@ final class ConfigLoader implements ConfigLoaderInterface
             }
         }
 
+        $result['shouldUseCache'] = false;
+        if($result['cacheEnabled'] && $result['ttl'] > 0) {
+            $result['shouldUseCache'] = true;
+        }
+
         return $result;
     }
 
@@ -158,12 +163,5 @@ final class ConfigLoader implements ConfigLoaderInterface
         return $this->parameterBag->has($paramName)
             ? $this->parameterBag->get($paramName)
             : null;
-    }
-
-    public function shouldUseCache(array $result): bool {
-        if($result['cacheEnabled'] && $result['ttl'] > 0) {
-            return true;
-        }
-        return false;
     }
 }

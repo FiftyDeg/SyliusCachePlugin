@@ -21,6 +21,7 @@ use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
 use Sylius\Bundle\UiBundle\Renderer\TemplateBlockRendererInterface;
 use Sylius\Bundle\UiBundle\DataCollector\TemplateBlockRenderingHistory;
+use FiftyDeg\SyliusCachePlugin\Cache\Renderer\TwigTemplateBlockRendererUtilities;
 
 final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
 {
@@ -34,38 +35,28 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
 
     public function render(TemplateBlock $templateBlock, array $context = []): string
     {
-        $dataSerializer = new DataSerializer();
+        $twigTemplateBlockRendererUtilities = new TwigTemplateBlockRendererUtilities();
+        $checkCacheForBlock = $twigTemplateBlockRendererUtilities->checkCacheForBlock($this->configLoader, $this->fileSystemCacheAdapter, $templateBlock, $context);
 
-        $shouldUseCache = false;
-        if (is_string($templateBlock->getName())) {
-            $checkEventBlockCache = $this->configLoader->checkEventBlockCache($templateBlock->getEventName(), $templateBlock->getName());
-            $shouldUseCache = $this->configLoader->shouldUseCache($checkEventBlockCache);
-        }
+        $checkEventBlockCache = $checkCacheForBlock['checkEventBlockCache']; 
+        $shouldUseCache = $checkCacheForBlock['shouldUseCache'];
+        $blockFromCache = $checkCacheForBlock['blockFromCache'];
+        $cacheKey = $checkCacheForBlock['cacheKey'];
 
-        $cacheKey = $dataSerializer->buildCacheKey($templateBlock->getName(), $context, $checkEventBlockCache['ttl']);
-
-        if($shouldUseCache) {
-            $blockFromCache = $this->fileSystemCacheAdapter->get($cacheKey, true);
-            if(!is_null($blockFromCache)) {
-                return $blockFromCache;
-            }
+        if(!is_null($blockFromCache)) {
+            return $blockFromCache;
         }
 
         $this->templateBlockRenderingHistory->startRenderingBlock($templateBlock, $context);
         $renderedBlock = $this->templateBlockRenderer->render($templateBlock, $context);
         $this->templateBlockRenderingHistory->stopRenderingBlock($templateBlock, $context);
 
-        if($shouldUseCache) {
-            $this->fileSystemCacheAdapter->set($cacheKey, $renderedBlock);
-        }
-
-        $debugString = 'event name: ' . $templateBlock->getEventName() . ', block name: ' . $templateBlock->getName() . ', template: "%s", priority: %d -->';
-        return '<!-- 222 FIFTYDEG SYLIUS BLOCK CACHE PLUGIN BEGIN BLOCK | ' . $debugString . 
-                    $renderedBlock .
-                    '<!-- FIFTYDEG SYLIUS BLOCK CACHE PLUGIN END BLOCK | ' . $debugString;
-    }
-
-    private function buildKey($dataSerializer, $blockName, $context, $cacheTtl) {
-        return $dataSerializer->safelySerialize($blockName) . $dataSerializer->safelySerialize($context) . $cacheTtl;
+        return $twigTemplateBlockRendererUtilities->saveInCacheAndPrintOutputData(
+            $shouldUseCache, 
+            $this->fileSystemCacheAdapter, 
+            $cacheKey, 
+            $renderedBlock, 
+            $checkEventBlockCache, 
+            $templateBlock);
     }
 }
