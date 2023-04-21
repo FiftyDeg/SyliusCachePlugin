@@ -24,6 +24,21 @@ final class ConfigLoader implements ConfigLoaderInterface
         return $this->getParam('is_cache_enabled');
     }
 
+    private function isEventCacheEnabled($eventNameToSearchFor): bool
+    {
+        $cacheableTemplateEvents = $this->getCacheableSyliusTemplateEvents();
+
+        foreach($cacheableTemplateEvents as $cacheSettings) {
+            if ($cacheSettings['name'] === $eventNameToSearchFor
+                && isset($cacheSettings['is_cache_enabled']) 
+                && !$cacheSettings['is_cache_enabled']) {
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
     private function getDefaultEventCacheEnabled(): bool
     {
         return $this->getParam('default_event_cache_enabled');
@@ -51,7 +66,8 @@ final class ConfigLoader implements ConfigLoaderInterface
             'ttl' => 0
         ];
 
-        if(!$this->isCacheEnabled()) {
+        if(!$this->isCacheEnabled()
+            || !$this->isEventCacheEnabled($eventNameToSearchFor)) {
             return $result;
         }
 
@@ -68,7 +84,7 @@ final class ConfigLoader implements ConfigLoaderInterface
                 if(isset($cacheSettings['ttl'])) {
                     $result['ttl'] = (int)$cacheSettings['ttl'];
                 }
-
+                
                 if (isset($cacheSettings['blocks'])
                     && is_array($cacheSettings['blocks'])
                     && count($cacheSettings['blocks']) > 0) {
@@ -95,7 +111,8 @@ final class ConfigLoader implements ConfigLoaderInterface
             'ttl' => 0
         ];
 
-        if(!$this->isCacheEnabled()) {
+        if(!$this->isCacheEnabled()
+            || !$this->isEventCacheEnabled($eventNameToSearchFor)) {
             return $result;
         }
 
@@ -105,17 +122,25 @@ final class ConfigLoader implements ConfigLoaderInterface
         $cacheableTemplateEvents = $this->getCacheableSyliusTemplateEvents();
 
         foreach($cacheableTemplateEvents as $cacheSettings) {
-            if ($cacheSettings['name'] === $eventNameToSearchFor
-                && isset($cacheSettings['blocks'])
-                && is_array($cacheSettings['blocks'])
-                && count($cacheSettings['blocks']) > 0) {
-                foreach($cacheSettings['blocks'] as $eventBlock) {
-                    if ($eventBlock['name'] === $blockNameToSearchFor) {
-                        if(isset($eventBlock['is_cache_enabled'])) {
-                            $result['cacheEnabled'] = $eventBlock['is_cache_enabled'];
-                        }
-                        if(isset($eventBlock['ttl'])) {
-                            $result['ttl'] = $eventBlock['ttl'];
+            if ($cacheSettings['name'] === $eventNameToSearchFor) {
+                if(isset($cacheSettings['default_event_block_cache_enabled'])) {
+                    $result['cacheEnabled'] = $cacheSettings['default_event_block_cache_enabled'];
+                }
+                if(isset($cacheSettings['default_event_block_cache_ttl'])) {
+                    $result['ttl'] = (int)$cacheSettings['default_event_block_cache_ttl'];
+                }
+
+                if(isset($cacheSettings['blocks'])
+                    && is_array($cacheSettings['blocks'])
+                    && count($cacheSettings['blocks']) > 0) {
+                    foreach($cacheSettings['blocks'] as $eventBlock) {
+                        if ($eventBlock['name'] === $blockNameToSearchFor) {
+                            if(isset($eventBlock['is_cache_enabled'])) {
+                                $result['cacheEnabled'] = $eventBlock['is_cache_enabled'];
+                            }
+                            if(isset($eventBlock['ttl'])) {
+                                $result['ttl'] = $eventBlock['ttl'];
+                            }
                         }
                     }
                 }
