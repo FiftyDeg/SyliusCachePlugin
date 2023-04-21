@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace FiftyDeg\SyliusCachePlugin\Cache\Renderer;
+namespace FiftyDeg\SyliusCachePlugin\Cache\Renderer\Debug;
 
 use Sylius\Bundle\UiBundle\ContextProvider\ContextProviderInterface;
 use Sylius\Bundle\UiBundle\Registry\TemplateBlock;
@@ -28,8 +28,7 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
         private CacheAdapterInterface $fileSystemCacheAdapter,
         private ConfigLoaderInterface $configLoader,
         private TemplateBlockRenderingHistory $templateBlockRenderingHistory,
-        private TemplateBlockRendererInterface $templateBlockRenderer,
-        private iterable $contextProviders)
+        private TemplateBlockRendererInterface $templateBlockRenderer )
     {
     }
 
@@ -52,20 +51,16 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
             }
         }
 
-        foreach ($this->contextProviders as $contextProvider) {
-            if (!$contextProvider instanceof ContextProviderInterface || !$contextProvider->supports($templateBlock)) {
-                continue;
-            }
-            $context = $contextProvider->provide($context, $templateBlock);
-        }
-        $renderedBlock = $this->twig->render($templateBlock->getTemplate(), $context);
+        $this->templateBlockRenderingHistory->startRenderingBlock($templateBlock, $context);
+        $renderedBlock = $this->templateBlockRenderer->render($templateBlock, $context);
+        $this->templateBlockRenderingHistory->stopRenderingBlock($templateBlock, $context);
 
         if($shouldUseCache) {
             $this->fileSystemCacheAdapter->set($cacheKey, $renderedBlock);
         }
 
         $debugString = 'event name: ' . $templateBlock->getEventName() . ', block name: ' . $templateBlock->getName() . ', template: "%s", priority: %d -->';
-        return '<!-- 111 FIFTYDEG SYLIUS BLOCK CACHE PLUGIN BEGIN BLOCK | ' . $debugString . 
+        return '<!-- 222 FIFTYDEG SYLIUS BLOCK CACHE PLUGIN BEGIN BLOCK | ' . $debugString . 
                     $renderedBlock .
                     '<!-- FIFTYDEG SYLIUS BLOCK CACHE PLUGIN END BLOCK | ' . $debugString;
     }
