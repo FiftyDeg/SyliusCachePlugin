@@ -74,7 +74,7 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
         }
 
         $debugString = 'event name: ' . $templateBlock->getEventName() . ', block name: ' . $templateBlock->getName() . ', template: "%s", priority: %d -->';
-        return '<!-- FIFTYDEG!!!!!!!!!!!!!! BEGIN BLOCK | ' . $debugString;
+        return '<!-- FIFTYDEG!!!!!!!!!!!!!! BEGIN BLOCK | ' . $debugString . 
                     $renderedBlock .
                     '<!-- FIFTYDEG!!!!!!!!!!!!!!! END BLOCK | ' . $debugString;
     }
