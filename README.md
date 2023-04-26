@@ -21,7 +21,7 @@ In `config/bundles.php` add
 ### Step 2: Register routes and vendor settings
 In order to register routes, add the following code snippet in `config/routes.yaml`:
 ```yaml
-fiftydeg_sylius_cache_plugin:
+fifty_deg_sylius_cache_plugin:
     resource: "@FiftyDegSyliusCachePlugin/Resources/config/routes.yaml"
 ```
 In `config/services.yaml` remove this bundle from autowiring and register vendor settings:
@@ -35,7 +35,7 @@ services:
 
 ```yaml
 imports:
-    - { resource: "@FiftyDegSyliusCachePlugin/Resources/config/config_vendor.yaml" }
+    - { resource: "@FiftyDegSyliusCachePlugin/Resources/config/config_bundle.yaml" }
 ```
 
 ### Step 3: Setup webpack encore assets
@@ -65,24 +65,71 @@ parameters:
 ## Usage
 
 ### Setup cache behaviour
-Create the `config/packages/fiftydeg_cache.yaml` file (you can also create it per environment) in order to configure cache settings.
+To understand the following configuration settings, consider that there are 
+- `general settings`: for every events.
+- `event specific settings`
+- `block specific settings` (in fact, remember that an event could contain blocks)
+
+And, essentially, for every context (general, event, block), the cache needs 2 information to work:
+- `enable`: if it is enabled or not
+- `ttl`: time to live, how much time the cache will be alive.
+
+So, create the `config/packages/fiftydeg_cache.yaml` file (you can also create it per environment) in order to configure cache settings.
+
 Available settings are:
-- `is_cache_enabled` (boolean) Defines if cache is enabled, or not.
+- `is_cache_enabled` (boolean) Defines if cache is enabled, or not, in general; it is like a switch on/of of the entire cache.
+- `default_event_cache_enabled` (boolean) Defines - for each event - the default value of `default_event_cache_enabled` if it is not present (see later).
+- `default_event_block_cache_enabled` (boolean) Defines - for each event block - the default value of `default_event_block_cache_enabled` if it is not present (see later).
+- `default_event_cache_ttl` (integer) Defines - for each event - the default value of `ttl` if it is not present (see later).
+- `default_event_block_cache_ttl` (integer) Defines - for each event block - the default value of `ttl` if it is not present (see later).
 - `cacheable_sylius_template_events`: (array of objects) allows you to define the sylius templates events that can be cached, and the cache TTL
-  - Each entry contains the `name` and `ttl` params
+  - Each entry contains
+    - `name`: (string) Defines the name of the event to cache
+    - `ttl`: (integer) Defines the ttl of the event cache
+    - `is_cache_enabled`: (boolean) Defines if the event cache is switched on or not
+    - `default_event_block_cache_enabled`: (boolean) Defines - for each event block - the default value of `default_event_block_cache_enabled` if it is not present 
+    - `default_event_block_cache_ttl`: (integer) Defines - for each event block - the default value of `ttl` if it is not present (see later).
+    - `blocks`: (array of objects) allows you to define the blocks contained in the current sylius templates events, that can be cached, and the cache TTL  
+      - Each entry contains
+        - `name`: (string) Defines the name of the event block to cache  
+        - `ttl`: (integer) Defines the ttl of the event block to cache  
+        - `is_cache_enabled`: (boolean) Defines if the event block is cached or not
+  
   
 Below, a sample configuration:  
 ```yaml
 fifty_deg_sylius_cache:
-    is_cache_enabled: true
-    cacheable_sylius_template_events:
-        # Layout cache
-        - { name: 'sylius.shop.layout.header', ttl: 600 }
-        - { name: 'sylius.shop.layout.header.navigation', ttl: 86400 }
-        - { name: 'sylius.shop.layout.header.widgets', ttl: 86400 }
-        - { name: 'sylius.shop.layout.header.search', ttl: 86400 }
-        - { name: 'sylius.shop.layout.footer', ttl: 86400 }
+  is_cache_enabled: true
+  default_event_cache_enabled: true
+  default_event_block_cache_enabled: true
+  default_event_cache_ttl: 86400
+  default_event_block_cache_ttl: 86400
+  cacheable_sylius_template_events:
+    - name: ssylius.shop.layout.header
+      ttl: 86400
+      is_cache_enabled: true
+      default_event_block_cache_enabled: true
+      default_event_block_cache_ttl: 86400
+      blocks:
+        - name: template_event_cache_test
+          ttl: 86400
+          is_cache_enabled: true
+        - name: template_event_cache_test_not_cached
+          ttl: 86400
+          is_cache_enabled: false
         - { name: 'sylius.shop.layout.after_content', ttl: 86400 }
+    - name: sylius.shop.layout.footer
+      ttl: 86400
+      is_cache_enabled: true
+      default_event_block_cache_enabled: true
+      default_event_block_cache_ttl: 86400
+      blocks:
+        - name: template_event_cache_test
+          ttl: 86400
+          is_cache_enabled: true
+        - name: template_event_cache_test_not_cached
+          ttl: 86400
+          is_cache_enabled: false
 ```
 
 ### Atomically specify the sylius template event cache on the Twig side
