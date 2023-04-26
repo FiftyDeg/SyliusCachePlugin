@@ -196,13 +196,13 @@ final class CachedController
 ```
 
 ### Flush cache
-You can flush the entire ecosystem cache via `php bin/console c:c` or you can flush just Fifty Deg cache by visiting `https://it.letshelter.local/admin/fiftydeg-cache/index/`  
+You can flush the entire ecosystem cache via `php bin/console c:c` or you can flush just Fifty Deg cache by visiting `/admin/fiftydeg-cache/index/`  
 
 ## Customization
 
 ### Cache Adapter
 By default, this bundle make use of the filesystem for the caching storage.  
-You can implement your own cache adapter (e.g. APCu, Redis, Memcache, ...) by implementing the `FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapter` interface and replacing the `app.fifty_deg.cache.adapters.cache_adapter` service.
+You can implement your own cache adapter (e.g. APCu, Redis, Memcache, ...) by implementing the `FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapter` interface and replacing the `fifty_deg.sylius_cache_plugin.adapters.cache_adapter` service.
 
 # TODO
 - [IMPORTANT][TO BE DELETED] Inject Interface instead of Class
@@ -223,108 +223,16 @@ there you will find the <a href="https://docs.sylius.com/en/latest/plugin-develo
 
 ## Quickstart Installation
 
-### Traditional
-
-1. Run `composer create-project sylius/plugin-skeleton ProjectName`.
-
-2. From the plugin skeleton root directory, run the following commands:
-
-    ```bash
-    $ (cd tests/Application && yarn install)
-    $ (cd tests/Application && yarn build)
-    $ (cd tests/Application && APP_ENV=test bin/console assets:install public)
-    
-    $ (cd tests/Application && APP_ENV=test bin/console doctrine:database:create)
-    $ (cd tests/Application && APP_ENV=test bin/console doctrine:schema:create)
-    ```
-
-To be able to set up a plugin's database, remember to configure you database credentials in `tests/Application/.env` and `tests/Application/.env.test`.
-
 ### Docker
 
-- Launch the docker image via `./.docker/bin/start.sh` command
-- Once the image is ready, run fixtures etc. through one of the following commands
-  - `./.docker/bin/make_dev.sh` for dev environment
-  - `./.docker/bin/make_test.sh` for test environment
-- open `localhost/en_US/`
+1. Execute `cd ./.docker && ./bin/start_dev.sh`
+2. Configure `/etc/hosts` and add the `127.0.0.1    syliusplugin.local` new entry
+2. Open your browser and go to `https://syliusplugin.local`
 
-## Testing
+## Usage
 
-  - Enter the docker image `docker exec -it sylius-cache-plugin_app_1 sh`
+### Running plugin tests
 
-  - PHPUnit
-
-    ```bash
-    APP_ENV=test vendor/bin/phpunit
-    ```
-
-  - PHPSpec
-
-    ```bash
-    APP_ENV=test vendor/bin/phpspec run
-    ```
-
-  - Behat (non-JS scenarios)
-
-    ```bash
-    APP_ENV=test vendor/bin/behat --strict --tags="~@javascript"
-    ```
-
-  - Behat (JS scenarios)
- 
-    1. [Install Symfony CLI command](https://symfony.com/download).
- 
-    2. Start Headless Chrome:
-    
-      ```bash
-      google-chrome-stable --enable-automation --disable-background-networking --no-default-browser-check --no-first-run --disable-popup-blocking --disable-default-apps --allow-insecure-localhost --disable-translate --disable-extensions --no-sandbox --enable-features=Metal --headless --remote-debugging-port=9222 --window-size=2880,1800 --proxy-server='direct://' --proxy-bypass-list='*' http://127.0.0.1
-      ```
-    
-    3. Install SSL certificates (only once needed) and run test application's webserver on `127.0.0.1:8080`:
-    
-      ```bash
-      symfony server:ca:install
-      APP_ENV=test symfony server:start --port=8080 --dir=tests/Application/public --daemon
-      ```
-    
-    4. Run Behat:
-    
-      ```bash
-      vendor/bin/behat --strict --tags="@javascript"
-      ```
-    
-  - Static Analysis
-  
-    - Psalm
-    
-      ```bash
-      vendor/bin/psalm
-      ```
-      
-    - PHPStan
-    
-      ```bash
-      vendor/bin/phpstan analyse -c phpstan.neon -l max src/  
-      ```
-
-  - Coding Standard
-  
-    ```bash
-    vendor/bin/ecs check
-    ```
-
-### Opening Sylius with your plugin
-
-- Using `test` environment:
-
-    ```bash
-    (cd tests/Application && APP_ENV=test bin/console sylius:fixtures:load)
-    (cd tests/Application && APP_ENV=test bin/console server:run -d public)
-    ```
-    
-- Using `dev` environment:
-
-    ```bash
-    (cd tests/Application && APP_ENV=dev bin/console sylius:fixtures:load)
-    (cd tests/Application && APP_ENV=dev bin/console server:run -d public)
-    ```
+  - Run `cd .docker && ./bin/start_test.sh` in order to start docker compose in test mode
+  - Wait docker to be up and running...
+  - Run `cd .docker && ./bin/php_test.sh` in order to start static analysis and Behat tests
