@@ -1,0 +1,21 @@
+name: CI
+on:
+  push:
+    branches:
+      - "*/*"
+      - "!master"
+      - "!main"
+
+jobs:
+  ci:
+    name: CI - Static analysis and automated tests
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run static analysis and Behat
+        run: |
+            cd ./.docker
+            ./bin/start_test_ci.sh
+
