@@ -74,7 +74,7 @@ And, essentially, for every context (general, event, block), the cache needs 2 i
 - `enable`: if it is enabled or not
 - `ttl`: time to live, how much time the cache will be alive.
 
-So, create the `config/packages/fiftydeg_cache.yaml` file (you can also create it per environment) in order to configure cache settings.
+So, create the `config/packages/fiftydeg_sylius_cache_plugin.yaml` file (you can also create it per environment) in order to configure cache settings.
 
 Available settings are:
 - `is_cache_enabled` (boolean) Defines if cache is enabled, or not, in general; it is like a switch on/of of the entire cache.
@@ -236,3 +236,7 @@ there you will find the <a href="https://docs.sylius.com/en/latest/plugin-develo
   - Run `cd .docker && ./bin/start_test.sh` in order to start docker compose in test mode
   - Wait docker to be up and running...
   - Run `cd .docker && ./bin/php_test.sh` in order to start static analysis and Behat tests
+
+#### BDD
+A suite for BDD testing is already present; you cand find the features in /features, and the asscoiated PHP code in /Behat/Context/Ui/Shop.
+It work on two hidden divs in your project footer; one should be cached and the other one not; but you can modify the test as you can wish.
