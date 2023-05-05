@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace FiftyDeg\SyliusCachePlugin\Controller;
 
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
-use Sylius\Component\Channel\Model\ChannelInterface;
 use Sylius\Component\Channel\Repository\ChannelRepositoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -20,9 +19,8 @@ final class CacheFlusherController
         private CacheAdapterInterface $cacheAdapter,
         private ChannelRepositoryInterface $channelRepository,
         private RouterInterface $router,
-        private Environment $twig
-    )
-    {
+        private Environment $twig,
+    ) {
     }
 
     public function indexAction(Request $request): Response
@@ -31,7 +29,6 @@ final class CacheFlusherController
             ? (string) $request->query->get('channel')
             : null;
 
-        /** @var ChannelInterface|null $channel */
         $channel = $this->findChannelByCodeOrFindFirst($channelCode);
 
         if (null === $channel) {
@@ -50,13 +47,13 @@ final class CacheFlusherController
         $success = $this->cacheAdapter->flush();
 
         $result = [
-            "success" => $success,
+            'success' => $success,
         ];
 
         return new JsonResponse($result);
     }
 
-    private function findChannelByCodeOrFindFirst(?string $channelCode): ?ChannelInterface
+    private function findChannelByCodeOrFindFirst(?string $channelCode): null|object
     {
         if (null !== $channelCode) {
             return $this->channelRepository->findOneByCode($channelCode);

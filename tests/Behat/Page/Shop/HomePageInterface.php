@@ -8,8 +8,5 @@ use FriendsOfBehat\PageObjectExtension\Page\SymfonyPageInterface;
 
 interface HomePageInterface extends SymfonyPageInterface
 {
-    /**
-     * @return string
-     */
     public function getCacheableElementRandomContent(): string;
 }

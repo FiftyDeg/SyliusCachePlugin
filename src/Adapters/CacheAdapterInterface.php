@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace FiftyDeg\SyliusCachePlugin\Adapters;
 
-use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
+interface CacheAdapterInterface
+{
+    public const TTL_ONE_HOUR = 3360;
 
-interface CacheAdapterInterface {
-    const TTL_ONE_HOUR = 3360;
-    const TTL_ONE_DAY = 86400;
-    const TTL_ONE_WEEK = 604800;
+    public const TTL_ONE_DAY = 86400;
+
+    public const TTL_ONE_WEEK = 604800;
 
     public function set(string $key, mixed $value, ?int $expiresAfter = null): bool;
 

@@ -11,32 +11,21 @@ use Webmozart\Assert\Assert;
 
 final class HomePageMissCacheContext implements Context
 {
-    /**
-     * @var HomePageInterface
-     */
     private $homePage;
 
-    /**
-     * @var string
-     */
-    private $jonDoeRandomContent;
+    private $jonCachableCont;
 
-    /**
-     * @var string
-     */
-    private $fooBarRandomContent;
+    private $jonNotCachableCont;
 
-    /**
-     * @var CacheAdapterInterface
-     */
+    private $fooCachableCont;
+
+    private $fooNotCachableCont;
+
     private $cacheAdapter;
 
-    /**
-     * @param HomePageInterface $homePage
-     */
     public function __construct(
         HomePageInterface $homePage,
-        CacheAdapterInterface $cacheAdapter
+        CacheAdapterInterface $cacheAdapter,
     ) {
         $this->homePage = $homePage;
         $this->cacheAdapter = $cacheAdapter;
@@ -49,7 +38,9 @@ final class HomePageMissCacheContext implements Context
     {
         $this->homePage->open();
 
-        $this->jonDoeRandomContent = $this->homePage->getCacheableElementRandomContent();
+        $this->jonCachableCont = $this->homePage->getCacheableElementRandomContent();
+
+        $this->jonNotCachableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
@@ -67,18 +58,30 @@ final class HomePageMissCacheContext implements Context
     {
         $this->homePage->open();
 
-        $this->fooBarRandomContent = $this->homePage->getCacheableElementRandomContent();
+        $this->fooCachableCont = $this->homePage->getCacheableElementRandomContent();
+
+        $this->fooNotCachableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
-     * @Then Foo Bar does not see Jon Doe random content
+     * @Then Foo Bar does not see Jon Doe cachable content
      */
-
-    public function theHomePageCacheIsNotEmpty(): void
+    public function theHomePageCacheIsEmptyOnCachableContent(): void
     {
         Assert::notSame(
-            $this->jonDoeRandomContent,
-            $this->fooBarRandomContent
+            $this->jonCachableCont,
+            $this->fooCachableCont,
+        );
+    }
+
+    /**
+     * @Then Foo Bar does not see Jon Doe not cachable content
+     */
+    public function theHomePageCacheIsEmptyOnNotCachableContent(): void
+    {
+        Assert::notSame(
+            $this->jonNotCachableCont,
+            $this->fooNotCachableCont,
         );
     }
 }

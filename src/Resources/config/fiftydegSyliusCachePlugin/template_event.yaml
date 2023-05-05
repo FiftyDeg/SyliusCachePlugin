@@ -6,6 +6,5 @@ services:
             - '@fifty_deg.sylius_cache_plugin.adapters.cache_adapter'
             - '@fifty_deg.sylius_cache_plugin.config_loader.config_loader'
             - '@Sylius\Bundle\UiBundle\DataCollector\TemplateBlockRenderingHistory'
-            - '@FiftyDeg\SyliusCachePlugin\Cache\Renderer\TwigTemplateBlockRenderer.inner'
-            - !tagged_iterator sylius.ui.template_event.context_provider
+            - sylius.ui.template_event.context_provider
             

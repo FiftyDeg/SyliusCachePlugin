@@ -9,4 +9,5 @@ Feature: Missing cache
         When Jon Doe visits the homepage
         And the cache has been flushed
         And Foo Bar visits the homepage after Jon Doe
-        Then Foo Bar does not see Jon Doe random content
+        Then Foo Bar does not see Jon Doe cachable content
+        Then Foo Bar does not see Jon Doe not cachable content

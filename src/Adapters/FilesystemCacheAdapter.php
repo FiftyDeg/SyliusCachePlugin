@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace FiftyDeg\SyliusCachePlugin\Adapters;
 
 use Exception;
-use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
-use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
 use Sylius\Component\Channel\Context\ChannelContextInterface;
 use Sylius\Component\Locale\Context\LocaleContextInterface;
+use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
+use Symfony\Component\Cache\CacheItem;
 
 final class FilesystemCacheAdapter implements CacheAdapterInterface
 {
@@ -16,13 +16,11 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
     private $cache;
 
     public function __construct(
-        private ConfigLoaderInterface $configLoader,
         private ChannelContextInterface $channelContext,
         private LocaleContextInterface $localeContext,
         private string $projectDir,
-        private string $env,
         private string $namespace,
-        private int $ttl
+        private int $ttl,
     ) {
         $this->cache = new FilesystemTagAwareAdapter(
             // a string used as the subdirectory of the root cache directory, where cache
@@ -34,7 +32,7 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
             $this->ttl,
             // the main cache directory (the application needs read-write permissions on it)
             // if none is specified, a directory is created inside the system temporary directory
-            $this->projectDir . DIRECTORY_SEPARATOR . "var/cache/{$this->env}"
+            $this->projectDir . \DIRECTORY_SEPARATOR . 'var/cache/{$this->env}',
         );
     }
 
@@ -69,9 +67,10 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function delete(string $key): bool
     {
+        /** @var CacheItem $cacheItem */
         $cacheItem = $this->get($key);
 
-        if (!($cacheItem && $cacheItem->isHit())) {
+        if (!$cacheItem->isHit()) {
             return false;
         }
 
@@ -93,9 +92,12 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
     private function hashKey(string $key): string
     {
         $channelCode = $this->channelContext->getChannel()->getCode();
-        $localeCode  = $this->localeContext->getLocaleCode();
+        if (null === $channelCode) {
+            $channelCode = '';
+        }
+        $localeCode = $this->localeContext->getLocaleCode();
 
-        $key = $channelCode . "__" . $localeCode . "__" . $key;
+        $key = $channelCode . '__' . $localeCode . '__' . $key;
 
         return hash('md5', $key);
     }

@@ -13,50 +13,55 @@ declare(strict_types=1);
 
 namespace FiftyDeg\SyliusCachePlugin\Cache\Renderer\Debug;
 
-use Sylius\Bundle\UiBundle\ContextProvider\ContextProviderInterface;
-use Sylius\Bundle\UiBundle\Registry\TemplateBlock;
-use Twig\Environment;
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
-use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
-use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
-use Sylius\Bundle\UiBundle\Renderer\TemplateBlockRendererInterface;
-use Sylius\Bundle\UiBundle\DataCollector\TemplateBlockRenderingHistory;
 use FiftyDeg\SyliusCachePlugin\Cache\Renderer\TwigTemplateBlockRendererUtilities;
+use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
+use Sylius\Bundle\UiBundle\DataCollector\TemplateBlockRenderingHistory;
+use Sylius\Bundle\UiBundle\Registry\TemplateBlock;
+use Sylius\Bundle\UiBundle\Renderer\TemplateBlockRendererInterface;
 
 final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
 {
-    public function __construct(private Environment $twig, 
-        private CacheAdapterInterface $fileSystemCacheAdapter,
+    public function __construct(
+        private CacheAdapterInterface $fsCacheAdapter,
         private ConfigLoaderInterface $configLoader,
-        private TemplateBlockRenderingHistory $templateBlockRenderingHistory,
-        private TemplateBlockRendererInterface $templateBlockRenderer )
-    {
+        private TemplateBlockRenderingHistory $blockRenderHistory,
+        private TemplateBlockRendererInterface $blockRenderer,
+    ) {
     }
 
     public function render(TemplateBlock $templateBlock, array $context = []): string
     {
-        $twigTemplateBlockRendererUtilities = new TwigTemplateBlockRendererUtilities();
-        $checkCacheForBlock = $twigTemplateBlockRendererUtilities->checkCacheForBlock($this->configLoader, $this->fileSystemCacheAdapter, $templateBlock, $context);
+        $rendererUtilities = new TwigTemplateBlockRendererUtilities();
+        $checkCacheForBlock = $rendererUtilities->checkCacheForBlock($this->configLoader, $this->fsCacheAdapter, $templateBlock, $context);
 
-        $checkEventBlockCache = $checkCacheForBlock['checkEventBlockCache']; 
+        /** @var array<array-key, int> $checkEventBlockCache */
+        $checkEventBlockCache = $checkCacheForBlock['checkEventBlockCache'];
+
+        /** @var bool $shouldUseCache */
         $shouldUseCache = $checkCacheForBlock['shouldUseCache'];
+
+        /** @var string|null $blockFromCache */
         $blockFromCache = $checkCacheForBlock['blockFromCache'];
+
+        /** @var string $cacheKey */
         $cacheKey = $checkCacheForBlock['cacheKey'];
 
-        if(!is_null($blockFromCache)) {
+        if (null !== $blockFromCache) {
             return $blockFromCache;
         }
 
-        $this->templateBlockRenderingHistory->startRenderingBlock($templateBlock, $context);
-        $renderedBlock = $this->templateBlockRenderer->render($templateBlock, $context);
-        $this->templateBlockRenderingHistory->stopRenderingBlock($templateBlock, $context);
+        $this->blockRenderHistory->startRenderingBlock($templateBlock, $context);
+        $renderedBlock = $this->blockRenderer->render($templateBlock, $context);
+        $this->blockRenderHistory->stopRenderingBlock($templateBlock, $context);
 
-        return $twigTemplateBlockRendererUtilities->saveInCacheAndPrintOutputData(
-            $shouldUseCache, 
-            $this->fileSystemCacheAdapter, 
-            $cacheKey, 
-            $renderedBlock, 
-            $checkEventBlockCache, 
-            $templateBlock);
+        return $rendererUtilities->saveInCacheAndPrintOutputData(
+            $shouldUseCache,
+            $this->fsCacheAdapter,
+            $cacheKey,
+            $renderedBlock,
+            $checkEventBlockCache,
+            $templateBlock,
+        );
     }
 }

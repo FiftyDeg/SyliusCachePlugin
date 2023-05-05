@@ -12,15 +12,11 @@ declare(strict_types=1);
 namespace FiftyDeg\SyliusCachePlugin\Twig;
 
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
+use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
-use Exception;
-use Sylius\Bundle\ResourceBundle\Controller\RequestConfiguration;
 use Sylius\Bundle\UiBundle\Renderer\TemplateEventRendererInterface;
-use Symfony\Bridge\Twig\AppVariable;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
 
 /**
  * @experimental
@@ -28,11 +24,10 @@ use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
 final class TemplateEventExtension extends AbstractExtension
 {
     public function __construct(
-        private TemplateEventRendererInterface $templateEventRenderer,
+        private TemplateEventRendererInterface $templateRenderer,
         private CacheAdapterInterface $cacheAdapter,
         private ConfigLoaderInterface $configLoader,
-    )
-    {
+    ) {
     }
 
     public function getFunctions(): array
@@ -44,18 +39,20 @@ final class TemplateEventExtension extends AbstractExtension
 
     /**
      * @param string|string[] $eventName
-     * @param array $context
-     * @param int $cacheTtl
      */
-    public function render(string|array $eventName, array $context = [], int $cacheTtl = -1): string
+    public function render($eventName, array $context = [], int $cacheTtl = -1): string
     {
         $dataSerializer = new DataSerializer();
 
+        /** @var bool $eventCacheEnabled */
         $eventCacheEnabled = false;
         if (is_string($eventName)) {
             $checkEventCache = $this->configLoader->checkEventCache($eventName);
+
+            /** @var bool $eventCacheEnabled */
             $eventCacheEnabled = $checkEventCache['cacheEnabled'];
-            if($cacheTtl === -1) {
+            if ($cacheTtl === -1) {
+                /** @var int $cacheTtl */
                 $cacheTtl = $checkEventCache['ttl'];
             }
         }
@@ -66,9 +63,11 @@ final class TemplateEventExtension extends AbstractExtension
 
         $cacheKey = $dataSerializer->buildCacheKey($eventName, $context, $cacheTtl);
 
+        /** @var string|null $cacheValue */
         $cacheValue = $this->cacheAdapter->get($cacheKey);
 
-        if (!is_null($cacheValue)) {
+        if (null !== $cacheValue &&
+            $cacheValue !== '') {
             return $cacheValue;
         }
 
@@ -87,6 +86,6 @@ final class TemplateEventExtension extends AbstractExtension
             ? $eventName
             : [$eventName];
 
-        return $this->templateEventRenderer->render($eventNames, $context);
+        return $this->templateRenderer->render($eventNames, $context);
     }
 }

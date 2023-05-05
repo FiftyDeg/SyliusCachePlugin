@@ -15,23 +15,29 @@ final class FiftyDegSyliusCacheExtension extends Extension
     /**
      * @psalm-suppress UnusedVariable
      */
-    public function load(array $config, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
-        $config = $this->processConfiguration($this->getConfiguration([], $container), $config);
-        $fileLocator = new FileLocator(__DIR__ . "/../Resources/config");
+        /** @var ConfigurationInterface $process */
+        $process = $this->getConfiguration([], $container);
+
+        /** @var array<array-key, array> $configs */
+        $configs = $this->processConfiguration($process, $configs);
+        $fileLocator = new FileLocator(__DIR__ . '/../Resources/config');
         $loader = new YamlFileLoader($container, $fileLocator);
         $loader->load('config_bundle.yaml');
 
-        if ($container->getParameter('kernel.debug')) {
-            $loader->load('fiftydegSyliusCachePlugin/debug/template_event.yaml');
-        }
-        else {
-            $loader->load('fiftydegSyliusCachePlugin/template_event.yaml');
-        }
+        $yamlToLoad = 'fiftydegSyliusCachePlugin/template_event.yaml';
 
-        foreach ($config as $key => $param) {
+        /** @var bool $kernelDebug */
+        $kernelDebug = $container->getParameter('kernel.debug');
+        if ($kernelDebug) {
+            $yamlToLoad = 'fiftydegSyliusCachePlugin/debug/template_event.yaml';
+        }
+        $loader->load($yamlToLoad);
+
+        foreach ($configs as $key => $param) {
+            /** @var string $key */
             $container->setParameter($key, $param);
         }
-        
     }
 }

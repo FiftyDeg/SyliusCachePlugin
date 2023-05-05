@@ -13,14 +13,10 @@ declare(strict_types=1);
 
 namespace FiftyDeg\SyliusCachePlugin\Cache\Renderer;
 
-use Sylius\Bundle\UiBundle\ContextProvider\ContextProviderInterface;
-use Sylius\Bundle\UiBundle\Registry\TemplateBlock;
-use Twig\Environment;
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
 use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
-use Sylius\Bundle\UiBundle\Renderer\TemplateBlockRendererInterface;
-use Sylius\Bundle\UiBundle\DataCollector\TemplateBlockRenderingHistory;
+use Sylius\Bundle\UiBundle\Registry\TemplateBlock;
 
 final class TwigTemplateBlockRendererUtilities
 {
@@ -29,41 +25,57 @@ final class TwigTemplateBlockRendererUtilities
     }
 
     public function checkCacheForBlock(
-        ConfigLoaderInterface $configLoader, 
-        CacheAdapterInterface $fileSystemCacheAdapter, 
-        TemplateBlock $templateBlock, 
-        array $context = []): array
-    {
+        ConfigLoaderInterface $configLoader,
+        CacheAdapterInterface $fsCacheAdapter,
+        TemplateBlock $templateBlock,
+        array $context = [],
+    ): array {
         $dataSerializer = new DataSerializer();
+        $checkEventBlockCache = $configLoader->checkEventBlockCache($templateBlock->getEventName(), $templateBlock->getName());
 
-        $shouldUseCache = false;
-        if (is_string($templateBlock->getName())) {
-            $checkEventBlockCache = $configLoader->checkEventBlockCache($templateBlock->getEventName(), $templateBlock->getName());
-            $shouldUseCache = $checkEventBlockCache['shouldUseCache'];
-        }
+        /** @var bool $shouldUseCache */
+        $shouldUseCache = $checkEventBlockCache['shouldUseCache'];
 
-        $cacheKey = $dataSerializer->buildCacheKey($templateBlock->getName(), $context, $checkEventBlockCache['ttl']);
+        /** @var int $cacheTtl */
+        $cacheTtl = $checkEventBlockCache['ttl'];
 
+        $cacheKey = $dataSerializer->buildCacheKey($templateBlock->getName(), $context, $cacheTtl);
+
+        /** @var string|null $blockFromCache */
         $blockFromCache = null;
-        if($shouldUseCache) {
-            $blockFromCache = $fileSystemCacheAdapter->get($cacheKey, true);
+        if ($shouldUseCache) {
+            /** @var mixed|null $blockFromCache */
+            $blockFromCache = $fsCacheAdapter->get($cacheKey);
         }
 
         return  [
                     'checkEventBlockCache' => $checkEventBlockCache,
                     'shouldUseCache' => $shouldUseCache,
                     'blockFromCache' => $blockFromCache,
-                    'cacheKey' => $cacheKey
+                    'cacheKey' => $cacheKey,
                 ];
     }
 
-    public function saveInCacheAndPrintOutputData($shouldUseCache, $fileSystemCacheAdapter, $cacheKey, $renderedBlock, $checkEventBlockCache, $templateBlock) : string {
-        if($shouldUseCache) {
-            $fileSystemCacheAdapter->set($cacheKey, $renderedBlock, $checkEventBlockCache['ttl']);
+    /**
+     * @param bool $shouldUseCache
+     * @param CacheAdapterInterface $fsCacheAdapter
+     * @param string $cacheKey
+     * @param string $renderedBlock
+     * @param array<array-key, int> $checkEventBlockCache
+     * @param TemplateBlock $templateBlock
+     */
+    public function saveInCacheAndPrintOutputData($shouldUseCache, $fsCacheAdapter, $cacheKey, $renderedBlock, $checkEventBlockCache, $templateBlock): string
+    {
+        if ($shouldUseCache) {
+            $fsCacheAdapter->set($cacheKey, $renderedBlock, $checkEventBlockCache['ttl']);
         }
 
-        $debugString = 'event name: ' . $templateBlock->getEventName() . ', block name: ' . $templateBlock->getName() . ' -->';
-        return '<!-- FIFTYDEG SYLIUS BLOCK CACHE PLUGIN BEGIN BLOCK | ' . $debugString . 
+        $eventName = $templateBlock->getEventName();
+        $templateName = $templateBlock->getName();
+
+        $debugString = 'event name: ' . $eventName . ', block name: ' . $templateName . ' -->';
+
+        return '<!-- FIFTYDEG SYLIUS BLOCK CACHE PLUGIN BEGIN BLOCK | ' . $debugString .
                     $renderedBlock .
                     '<!-- FIFTYDEG SYLIUS BLOCK CACHE PLUGIN END BLOCK | ' . $debugString;
     }
