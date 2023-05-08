@@ -62,6 +62,18 @@ parameters:
     - '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface::arrayNode\(\).#'
 ```
 
+### Step 5
+Execute `cd ./.docker && ./bin/start_dev.sh`
+
+### Step 6
+Configure `/etc/hosts` and add the `127.0.0.1    syliusplugin.local` new entry
+
+### Step 7
+Add all the parts you want to cache, as described below
+
+### Step 8
+Open your browser and go to `https://syliusplugin.local`
+
 ## Usage
 
 ### Setup cache behaviour
@@ -207,7 +219,6 @@ You can implement your own cache adapter (e.g. APCu, Redis, Memcache, ...) by im
 # TODO
 - [IMPORTANT][TO BE DELETED] Inject Interface instead of Class
 - Allow caching per channel
-- Allow caching per sylius template block
 - Add capability to register a decache method
 - Add Admin translations (see also flushCache.js)
 - Improve Admin UI
@@ -220,15 +231,6 @@ You can implement your own cache adapter (e.g. APCu, Redis, Memcache, ...) by im
 
 For a comprehensive guide on Sylius Plugins development please go to Sylius documentation,
 there you will find the <a href="https://docs.sylius.com/en/latest/plugin-development-guide/index.html">Plugin Development Guide</a>, that is full of examples.
-
-## Quickstart Installation
-
-### Docker
-
-1. Execute `cd ./.docker && ./bin/start_dev.sh`
-2. Configure `/etc/hosts` and add the `127.0.0.1    syliusplugin.local` new entry
-3. Add `FiftyDeg\SyliusCachePlugin\FiftyDegSyliusCachePlugin::class => ['all' => true],` into /config/bundles.php 
-4. Open your browser and go to `https://syliusplugin.local`
 
 ## Usage
 
