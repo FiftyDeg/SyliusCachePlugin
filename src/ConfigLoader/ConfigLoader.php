@@ -142,6 +142,7 @@ final class ConfigLoader implements ConfigLoaderInterface
         $result = [
             'cacheEnabled' => false,
             'ttl' => 0,
+            'shouldUseCache' => false,
         ];
 
         if (!$this->isCacheEnabled() ||
@@ -178,7 +179,6 @@ final class ConfigLoader implements ConfigLoaderInterface
             }
         }
 
-        $result['shouldUseCache'] = false;
         if ($result['cacheEnabled'] && $result['ttl'] > 0) {
             $result['shouldUseCache'] = true;
         }

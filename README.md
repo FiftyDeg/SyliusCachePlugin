@@ -74,7 +74,7 @@ And, essentially, for every context (general, event, block), the cache needs 2 i
 - `enable`: if it is enabled or not
 - `ttl`: time to live, how much time the cache will be alive.
 
-So, create the `config/packages/fiftydeg_sylius_cache_plugin.yaml` file (you can also create it per environment) in order to configure cache settings.
+So, create the `config/packages/<environmente-where-you-are-working-in>/fiftydeg_sylius_cache_plugin.yaml` file (you can also create it per environment) in order to configure cache settings.
 
 Available settings are:
 - `is_cache_enabled` (boolean) Defines if cache is enabled, or not, in general; it is like a switch on/of of the entire cache.
@@ -227,7 +227,8 @@ there you will find the <a href="https://docs.sylius.com/en/latest/plugin-develo
 
 1. Execute `cd ./.docker && ./bin/start_dev.sh`
 2. Configure `/etc/hosts` and add the `127.0.0.1    syliusplugin.local` new entry
-2. Open your browser and go to `https://syliusplugin.local`
+3. Add `FiftyDeg\SyliusCachePlugin\FiftyDegSyliusCachePlugin::class => ['all' => true],` into /config/bundles.php 
+4. Open your browser and go to `https://syliusplugin.local`
 
 ## Usage
 
@@ -239,4 +240,31 @@ there you will find the <a href="https://docs.sylius.com/en/latest/plugin-develo
 
 #### BDD
 A suite for BDD testing is already present; you cand find the features in /features, and the asscoiated PHP code in /Behat/Context/Ui/Shop.
-It work on two hidden divs in your project footer; one should be cached and the other one not; but you can modify the test as you can wish.
+It works on two hidden divs in your project footer; one should be cached and the other one not; but you can modify the test as you can wish.
+
+In config/packages/<environment-where-you-are-working-in>, add `sylius_ui.yaml`, edit it and insert the configuration for your 
+data in page; as we mentioned before, in Sylius `events` contain `blocks`, so you could add a configuration like the following:
+
+```
+sylius_ui:
+    events:
+        sylius.shop.layout.footer:
+            blocks:
+                template_event_cache_test:
+                    template: "@FiftyDegSyliusCachePlugin/Test/Shop/Layout/Footer/_templateEventCacheTest.html.twig"
+                    priority: 100
+                template_event_cache_test_not_cached:
+                    template: "@FiftyDegSyliusCachePlugin/Test/Shop/Layout/Footer/_templateEventCacheTestNotCached.html.twig"
+                    priority: 100
+```
+
+where `sylius.shop.layout.footer` is the Sylius event printin the footer; and the following blocks are two custom blocks, especially created for the test of this plugin.
+
+As you can see you have to add two more files, `_templateEventCacheTest.html.twig` and `_templateEventCacheTestNotCached.html.twig`.
+The first one is for checking the cache is working, the second one for the opposite reason.
+
+Lastly, you have to add `config/packages/<environmente-where-you-are-working-in>/fiftydeg_sylius_cache_plugin.yaml`, as described before; so you can turn on and off che cache for the two divs in thw twigs specified before.
+
+Please, notice that the `blocks` name are the same specified in the `sylius_ui.yaml` file.
+
+With this template in mind, you can add or edit any test you wish; and watch it working directly in a page.

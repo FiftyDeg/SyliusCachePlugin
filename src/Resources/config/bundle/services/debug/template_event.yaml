@@ -1,9 +1,0 @@
-services:
-    FiftyDeg\SyliusCachePlugin\Cache\Renderer\Debug\TwigTemplateBlockRenderer:
-        decorates: Sylius\Bundle\UiBundle\DataCollector\TraceableTemplateBlockRenderer
-        arguments:
-            - '@fifty_deg.sylius_cache_plugin.adapters.cache_adapter'
-            - '@fifty_deg.sylius_cache_plugin.config_loader.config_loader'
-            - '@Sylius\Bundle\UiBundle\DataCollector\TemplateBlockRenderingHistory'
-            - '@FiftyDeg\SyliusCachePlugin\Cache\Renderer\Debug\TwigTemplateBlockRenderer.inner'
-            
