@@ -241,8 +241,8 @@ there you will find the <a href="https://docs.sylius.com/en/latest/plugin-develo
   - Run `cd .docker && ./bin/php_test.sh` in order to start static analysis and Behat tests
 
 #### BDD
-A suite for BDD testing is already present; you cand find the features in /features, and the asscoiated PHP code in /Behat/Context/Ui/Shop.
-It works on two hidden divs in your project footer; one should be cached and the other one not; but you can modify the test as you can wish.
+Two suites for BDD testing are already present; they are registered in `/tests/Behat/Resources/services.yml`, you cand find the features in `/features`, the contexts in `/tests/Behat/Resources/suites.yml`, and the asscoiated PHP code in /tests/Behat/Context/Ui/Shop.
+It works on two hidden divs in your project footer; one should be cached and the other one not; but you can modify the test as you wish.
 
 In config/packages/<environment-where-you-are-working-in>, add `sylius_ui.yaml`, edit it and insert the configuration for your 
 data in page; as we mentioned before, in Sylius `events` contain `blocks`, so you could add a configuration like the following:
