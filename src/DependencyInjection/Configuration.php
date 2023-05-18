@@ -22,8 +22,6 @@ final class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
         $rootChildren = $rootNode->children();
         $rootChildren->booleanNode('is_cache_enabled')->defaultValue(true);
-        $rootChildren->booleanNode('default_event_cache_enabled')->defaultValue(true);
-        $rootChildren->booleanNode('default_event_block_cache_enabled')->defaultValue(true);
         $rootChildren->scalarNode('default_event_cache_ttl')->defaultValue(86400);
         $rootChildren->scalarNode('default_event_block_cache_ttl')->defaultValue(86400);
 
@@ -31,15 +29,12 @@ final class Configuration implements ConfigurationInterface
 
         $events->scalarNode('name');
         $events->scalarNode('ttl');
-        $events->booleanNode('is_cache_enabled');
-        $events->booleanNode('default_event_block_cache_enabled')->defaultValue(true);
         $events->scalarNode('default_event_block_cache_ttl')->defaultValue(86400);
 
         $blocks = $events->arrayNode('blocks')->arrayPrototype()->children();
 
         $blocks->scalarNode('name');
         $blocks->scalarNode('ttl');
-        $blocks->booleanNode('is_cache_enabled');
 
         /** @var NodeBuilder $events */
         $events = $blocks->end()->end();

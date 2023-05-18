@@ -1,17 +1,8 @@
 <?php
 
-/*
- * This file is part of the Sylius package.
- *
- * (c) Paweł Jędrzejewski
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 declare(strict_types=1);
 
-namespace FiftyDeg\SyliusCachePlugin\Cache\Renderer;
+namespace FiftyDeg\SyliusCachePlugin\Renderer;
 
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
@@ -24,7 +15,7 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
 {
     public function __construct(
         private Environment $twig,
-        private CacheAdapterInterface $fsCacheAdapter,
+        private CacheAdapterInterface $cacheAdapter,
         private ConfigLoaderInterface $configLoader,
         private iterable $contextProviders,
     ) {
@@ -32,20 +23,17 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
 
     public function render(TemplateBlock $templateBlock, array $context = []): string
     {
-        $rendererUtilities = new TwigTemplateBlockRendererUtilities();
-        $checkCacheForBlock = $rendererUtilities->checkCacheForBlock($this->configLoader, $this->fsCacheAdapter, $templateBlock, $context);
+        $rendererUtilities = new TwigTemplateBlockRendererUtilities($this->configLoader, $this->cacheAdapter);
+        $cacheForBlock = $rendererUtilities->getCacheForBlock($templateBlock, $context);
 
-        /** @var array<array-key, int> $checkEventBlockCache */
-        $checkEventBlockCache = $checkCacheForBlock['checkEventBlockCache'];
-
-        /** @var bool $shouldUseCache */
-        $shouldUseCache = $checkCacheForBlock['shouldUseCache'];
+        /** @var int $blockCacheTTL */
+        $blockCacheTTL = $cacheForBlock['blockCacheTTL'];
 
         /** @var string|null $blockFromCache */
-        $blockFromCache = $checkCacheForBlock['blockFromCache'];
+        $blockFromCache = $cacheForBlock['blockFromCache'];
 
         /** @var string $cacheKey */
-        $cacheKey = $checkCacheForBlock['cacheKey'];
+        $cacheKey = $cacheForBlock['cacheKey'];
 
         if (null !== $blockFromCache) {
             return $blockFromCache;
@@ -67,11 +55,10 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
         $renderedBlock = $this->twig->render($templateBlock->getTemplate(), $context);
 
         return $rendererUtilities->saveInCacheAndPrintOutputData(
-            $shouldUseCache,
-            $this->fsCacheAdapter,
+            $this->cacheAdapter,
             $cacheKey,
             $renderedBlock,
-            $checkEventBlockCache,
+            $blockCacheTTL,
             $templateBlock,
         );
     }

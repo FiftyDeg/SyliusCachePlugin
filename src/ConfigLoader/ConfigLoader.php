@@ -39,29 +39,13 @@ final class ConfigLoader implements ConfigLoaderInterface
 
         foreach ($cacheableEvents as $cacheSettings) {
             if ($cacheSettings['name'] === $eventNameToSearchFor &&
-                isset($cacheSettings['is_cache_enabled']) &&
-                !$cacheSettings['is_cache_enabled']) {
+                isset($cacheSettings['ttl']) &&
+                $cacheSettings['ttl'] <= 0) {
                 return false;
             }
         }
 
         return true;
-    }
-
-    private function getDefaultEventCacheEnabled(): bool
-    {
-        /** @var bool $defCacheEnabled */
-        $defCacheEnabled = $this->getParam('default_event_cache_enabled');
-
-        return $defCacheEnabled;
-    }
-
-    private function getDefaultEventBlockCacheEnabled(): bool
-    {
-        /** @var bool $defCacheEnabled */
-        $defCacheEnabled = $this->getParam('default_event_block_cache_enabled');
-
-        return $defCacheEnabled;
     }
 
     private function getDefaultEventCacheTtl(): int
@@ -80,54 +64,28 @@ final class ConfigLoader implements ConfigLoaderInterface
         return $defaultTtl;
     }
 
-    public function checkEventCache(string $eventNameToSearchFor): array
+    public function getEventCacheTTL(string $eventNameToSearchFor): int
     {
-        $result = [
-            'cacheEnabled' => false,
-            'ttl' => 0,
-        ];
+        $result = 0;
 
         if (!$this->isCacheEnabled() ||
             !$this->isEventCacheEnabled($eventNameToSearchFor)) {
             return $result;
         }
 
-        $result['cacheEnabled'] = $this->getDefaultEventCacheEnabled() && $this->isCacheEnabled();
-        $result['ttl'] = $this->getDefaultEventCacheTtl();
+        $result = $this->getDefaultEventCacheTtl();
 
         /** @var array<array-key, array<array-key, mixed>> $cacheableEvents */
         $cacheableEvents = $this->getCacheableSyliusTemplateEvents();
 
         foreach ($cacheableEvents as $cacheSettings) {
             if ($cacheSettings['name'] === $eventNameToSearchFor) {
-                /** @var bool $defaultBlockCacheEn */
-                $defaultBlockCacheEn = $cacheSettings['default_event_block_cache_enabled'];
-
-                if (isset($cacheSettings['is_cache_enabled'])) {
-                    /** @var bool $isEnabled */
-                    $isEnabled = $cacheSettings['is_cache_enabled'];
-
-                    $result['cacheEnabled'] = $isEnabled;
-                }
                 if (isset($cacheSettings['ttl'])) {
-                    $result['ttl'] = (int) $cacheSettings['ttl'];
+                    $result = (int) $cacheSettings['ttl'];
                 }
 
-                if (isset($cacheSettings['blocks']) &&
-                    is_array($cacheSettings['blocks']) &&
-                    count($cacheSettings['blocks']) > 0) {
-                    /** @var array<array-key, array<array-key, mixed>> $cacheBlocks */
-                    $cacheBlocks = $cacheSettings['blocks'];
-
-                    foreach ($cacheBlocks as $eventBlock) {
-                        /** @var bool $blockCacheEnabled */
-                        $blockCacheEnabled = $eventBlock['is_cache_enabled'];
-                        if ((isset($eventBlock['is_cache_enabled']) && !$blockCacheEnabled) ||
-                            (!isset($eventBlock['is_cache_enabled']) && !$defaultBlockCacheEn)) {
-                            $result['cacheEnabled'] = false;
-                            $result['ttl'] = 0;
-                        }
-                    }
+                if ($this->hasInnerBlocksZeroTTL($cacheSettings)) {
+                    $result = 0;
                 }
             }
         }
@@ -135,82 +93,98 @@ final class ConfigLoader implements ConfigLoaderInterface
         return $result;
     }
 
-    public function checkEventBlockCache(
+    public function getBlockCacheTTL(
         string $eventNameToSearchFor,
         string $blockNameToSearchFor,
-    ): array {
-        $result = [
-            'cacheEnabled' => false,
-            'ttl' => 0,
-            'shouldUseCache' => false,
-        ];
-
-        if (!$this->isCacheEnabled() ||
-            !$this->isEventCacheEnabled($eventNameToSearchFor)) {
+    ): int {
+        $result = 0;
+        if (!$this->isCacheEnabled()) {
             return $result;
         }
 
-        $result['cacheEnabled'] = $this->getDefaultEventBlockCacheEnabled() && $this->isCacheEnabled();
-        $result['ttl'] = $this->getDefaultEventBlockCacheTtl();
+        $result = $this->getDefaultEventBlockCacheTtl();
 
-        /** @var array<array-key, array<array-key, mixed>> $cacheableEvents */
+        /** @var array<array-key, array<array-key, array<array-key, mixed>>> $cacheableEvents */
         $cacheableEvents = $this->getCacheableSyliusTemplateEvents();
 
         foreach ($cacheableEvents as $cacheSettings) {
-            if ($cacheSettings['name'] === $eventNameToSearchFor) {
-                if (isset($cacheSettings['default_event_block_cache_enabled'])) {
-                    /** @var bool $isEnabled */
-                    $isEnabled = $cacheSettings['default_event_block_cache_enabled'];
-
-                    $result['cacheEnabled'] = $isEnabled;
-                }
+            /** @var string $blockName */
+            $blockName = $cacheSettings['name'];
+            if ($blockName === $eventNameToSearchFor) {
                 if (isset($cacheSettings['default_event_block_cache_ttl'])) {
-                    $result['ttl'] = (int) $cacheSettings['default_event_block_cache_ttl'];
+                    $result = (int) $cacheSettings['default_event_block_cache_ttl'];
                 }
 
-                if (isset($cacheSettings['blocks']) &&
-                    is_array($cacheSettings['blocks']) &&
-                    count($cacheSettings['blocks']) > 0) {
-                    /** @var array<array-key, array<array-key, mixed>> $cacheBlocks */
-                    $cacheBlocks = $cacheSettings['blocks'];
+                $innerBlockTTL = $this->getInnerBlocksTTL($cacheSettings, $blockNameToSearchFor);
 
-                    $result = $this->checkInnerBlock($result, $cacheBlocks, $blockNameToSearchFor);
+                if ($innerBlockTTL !== -1) {
+                    $result = $innerBlockTTL;
                 }
             }
-        }
-
-        if ($result['cacheEnabled'] && $result['ttl'] > 0) {
-            $result['shouldUseCache'] = true;
         }
 
         return $result;
     }
 
-    /** 
-     * @param array<array-key, mixed> $result
-     * @param array<array-key, array<array-key, mixed>> $cacheBlocks
-     * @param string $blockNameToSearchFor 
+    /**
+     * @param array<array-key, mixed> $cacheSettings
      */
-    private function checkInnerBlock($result, $cacheBlocks, $blockNameToSearchFor): array
+    private function hasInnerBlocksZeroTTL($cacheSettings): bool
+    {
+        if (isset($cacheSettings['blocks']) &&
+            is_array($cacheSettings['blocks']) &&
+            count($cacheSettings['blocks']) > 0) {
+            /** @var array<array-key, array<array-key, mixed>> $cacheBlocks */
+            $cacheBlocks = $cacheSettings['blocks'];
+
+            foreach ($cacheBlocks as $eventBlock) {
+                if (isset($eventBlock['ttl']) &&
+                    $eventBlock['ttl'] === 0) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<array-key, array<array-key, mixed>> $cacheSettings
+     * @param string $blockNameToSearchFor
+     */
+    private function getInnerBlocksTTL($cacheSettings, $blockNameToSearchFor): int
+    {
+        if (isset($cacheSettings['blocks']) &&
+            count($cacheSettings['blocks']) > 0) {
+            /** @var array<array-key, array<array-key, mixed>> $cacheBlocks */
+            $cacheBlocks = $cacheSettings['blocks'];
+
+            return $this->getInnerBlockTTL($cacheBlocks, $blockNameToSearchFor);
+        }
+
+        return -1;
+    }
+
+    /**
+     * @param array<array-key, array<array-key, mixed>> $cacheBlocks
+     * @param string $blockNameToSearchFor
+     */
+    private function getInnerBlockTTL($cacheBlocks, $blockNameToSearchFor): int
     {
         foreach ($cacheBlocks as $eventBlock) {
             if ($eventBlock['name'] === $blockNameToSearchFor) {
-                if (isset($eventBlock['is_cache_enabled'])) {
-                    /** @var bool $isCached */
-                    $isCached = $eventBlock['is_cache_enabled'];
-
-                    $result['cacheEnabled'] = $isCached;
-                }
                 if (isset($eventBlock['ttl'])) {
                     /** @var int $eventTtl */
                     $eventTtl = $eventBlock['ttl'];
 
-                    $result['ttl'] = $eventTtl;
+                    return $eventTtl;
                 }
             }
         }
 
-        return $result;
+        return -1;
     }
 
     private function getParam(string $paramName): mixed

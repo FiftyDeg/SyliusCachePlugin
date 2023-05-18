@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace FiftyDeg\SyliusCachePlugin\Twig;
 
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
-use FiftyDeg\SyliusCachePlugin\Cache\Services\DataSerializer;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
+use FiftyDeg\SyliusCachePlugin\Services\DataSerializerInterface;
 use Sylius\Bundle\UiBundle\Renderer\TemplateEventRendererInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -27,6 +27,7 @@ final class TemplateEventExtension extends AbstractExtension
         private TemplateEventRendererInterface $templateRenderer,
         private CacheAdapterInterface $cacheAdapter,
         private ConfigLoaderInterface $configLoader,
+        private DataSerializerInterface $dataSerializer,
     ) {
     }
 
@@ -42,26 +43,19 @@ final class TemplateEventExtension extends AbstractExtension
      */
     public function render($eventName, array $context = [], int $cacheTtl = -1): string
     {
-        $dataSerializer = new DataSerializer();
-
-        /** @var bool $eventCacheEnabled */
-        $eventCacheEnabled = false;
         if (is_string($eventName)) {
-            $checkEventCache = $this->configLoader->checkEventCache($eventName);
+            $eventCacheTTL = $this->configLoader->getEventCacheTTL($eventName);
 
-            /** @var bool $eventCacheEnabled */
-            $eventCacheEnabled = $checkEventCache['cacheEnabled'];
             if ($cacheTtl === -1) {
-                /** @var int $cacheTtl */
-                $cacheTtl = $checkEventCache['ttl'];
+                $cacheTtl = $eventCacheTTL;
             }
         }
 
-        if (!$eventCacheEnabled || $cacheTtl <= 0) {
+        if ($cacheTtl <= 0) {
             return $this->doRender($eventName, $context);
         }
 
-        $cacheKey = $dataSerializer->buildCacheKey($eventName, $context, $cacheTtl);
+        $cacheKey = $this->dataSerializer->buildCacheKey($eventName, $context, $cacheTtl);
 
         /** @var string|null $cacheValue */
         $cacheValue = $this->cacheAdapter->get($cacheKey);

@@ -10,7 +10,7 @@ interface ConfigLoaderInterface
 
     public function isCacheEnabled(): bool;
 
-    public function checkEventCache(string $eventNameToSearchFor): array;
+    public function getEventCacheTTL(string $eventNameToSearchFor): int;
 
-    public function checkEventBlockCache(string $eventNameToSearchFor, string $blockNameToSearchFor): array;
+    public function getBlockCacheTTL(string $eventNameToSearchFor, string $blockNameToSearchFor): int;
 }

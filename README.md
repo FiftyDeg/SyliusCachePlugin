@@ -19,11 +19,6 @@ In `config/bundles.php` add
 ```
 
 ### Step 2: Register routes and vendor settings
-In order to register routes, add the following code snippet in `config/routes.yaml`:
-```yaml
-fifty_deg_sylius_cache_plugin:
-    resource: "@FiftyDegSyliusCachePlugin/Resources/config/routes.yaml"
-```
 In `config/services.yaml` remove this bundle from autowiring and register vendor settings:
 
 ```yaml
@@ -35,7 +30,7 @@ services:
 
 ```yaml
 imports:
-    - { resource: "@FiftyDegSyliusCachePlugin/Resources/config/config_bundle.yaml" }
+    - { resource: '@FiftyDegSyliusCachePlugin/Resources/config/config_vendor.yaml' }
 ```
 
 ### Step 3: Setup webpack encore assets
@@ -90,58 +85,42 @@ So, create the `config/packages/<environmente-where-you-are-working-in>/fiftydeg
 
 Available settings are:
 - `is_cache_enabled` (boolean) Defines if cache is enabled, or not, in general; it is like a switch on/of of the entire cache.
-- `default_event_cache_enabled` (boolean) Defines - for each event - the default value of `default_event_cache_enabled` if it is not present (see later).
-- `default_event_block_cache_enabled` (boolean) Defines - for each event block - the default value of `default_event_block_cache_enabled` if it is not present (see later).
 - `default_event_cache_ttl` (integer) Defines - for each event - the default value of `ttl` if it is not present (see later).
 - `default_event_block_cache_ttl` (integer) Defines - for each event block - the default value of `ttl` if it is not present (see later).
 - `cacheable_sylius_template_events`: (array of objects) allows you to define the sylius templates events that can be cached, and the cache TTL
   - Each entry contains
     - `name`: (string) Defines the name of the event to cache
     - `ttl`: (integer) Defines the ttl of the event cache
-    - `is_cache_enabled`: (boolean) Defines if the event cache is switched on or not
-    - `default_event_block_cache_enabled`: (boolean) Defines - for each event block - the default value of `default_event_block_cache_enabled` if it is not present 
-    - `default_event_block_cache_ttl`: (integer) Defines - for each event block - the default value of `ttl` if it is not present (see later).
+     - `default_event_block_cache_ttl`: (integer) Defines - for each event block - the default value of `ttl` if it is not present (see later).
     - `blocks`: (array of objects) allows you to define the blocks contained in the current sylius templates events, that can be cached, and the cache TTL  
       - Each entry contains
         - `name`: (string) Defines the name of the event block to cache  
-        - `ttl`: (integer) Defines the ttl of the event block to cache  
-        - `is_cache_enabled`: (boolean) Defines if the event block is cached or not
+        - `ttl`: (integer) Defines the ttl of the event block to cache
   
   
 Below, a sample configuration:  
 ```yaml
 fifty_deg_sylius_cache:
   is_cache_enabled: true
-  default_event_cache_enabled: true
-  default_event_block_cache_enabled: true
   default_event_cache_ttl: 86400
   default_event_block_cache_ttl: 86400
   cacheable_sylius_template_events:
     - name: ssylius.shop.layout.header
       ttl: 86400
-      is_cache_enabled: true
-      default_event_block_cache_enabled: true
       default_event_block_cache_ttl: 86400
       blocks:
         - name: template_event_cache_test
           ttl: 86400
-          is_cache_enabled: true
         - name: template_event_cache_test_not_cached
           ttl: 86400
-          is_cache_enabled: false
-        - { name: 'sylius.shop.layout.after_content', ttl: 86400 }
     - name: sylius.shop.layout.footer
       ttl: 86400
-      is_cache_enabled: true
-      default_event_block_cache_enabled: true
       default_event_block_cache_ttl: 86400
       blocks:
         - name: template_event_cache_test
           ttl: 86400
-          is_cache_enabled: true
         - name: template_event_cache_test_not_cached
           ttl: 86400
-          is_cache_enabled: false
 ```
 
 ### Atomically specify the sylius template event cache on the Twig side
@@ -223,7 +202,7 @@ You can implement your own cache adapter (e.g. APCu, Redis, Memcache, ...) by im
 - Add Admin translations (see also flushCache.js)
 - Improve Admin UI
 - Improve serialization of data containing closures
-- Cache also array of eventNames in src/FiftyDeg/Cache/Twig/TemplateEventExtension.php
+- Cache also array of eventNames in src/FiftyDeg/Twig/TemplateEventExtension.php
 - Introduce and improve LazyLoadContent.js (see existing file)
 
 
