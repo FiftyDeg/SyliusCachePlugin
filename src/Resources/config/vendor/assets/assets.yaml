@@ -3,3 +3,6 @@ framework:
         packages:
             fiftyDegCacheAdmin:
                 json_manifest_path: '%kernel.project_dir%/public/fifty-deg/sylius-cache-plugin/admin/manifest.json'
+
+            fiftyDegCacheShop:
+                json_manifest_path: '%kernel.project_dir%/public/fifty-deg/sylius-cache-plugin/shop/manifest.json'

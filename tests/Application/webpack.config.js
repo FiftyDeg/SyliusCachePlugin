@@ -1,6 +1,6 @@
 const path = require('path');
 const Encore = require('@symfony/webpack-encore');
-const [fiftyDegSyliusCachePluginAdmin] = require('../../webpack.config');
+const [fiftyDegSyliusCachePluginAdmin, fiftyDegSyliusCachePluginShop] = require('../../webpack.config');
 
 const syliusBundles = path.resolve(__dirname, '../../vendor/sylius/sylius/src/Sylius/Bundle/');
 const uiBundleScripts = path.resolve(syliusBundles, 'UiBundle/Resources/private/js/');
@@ -49,4 +49,5 @@ module.exports = [
   shopConfig,
   adminConfig,
   fiftyDegSyliusCachePluginAdmin,
+  fiftyDegSyliusCachePluginShop,
 ];

@@ -16,10 +16,6 @@
         "no-unused-vars": 0,
         "camelcase": 1,
         "comma-dangle": 2,
-        // "brace-style": [
-        //     2,
-        //     "allman"
-        // ],
         "quotes": [
             "error",
             "single"
