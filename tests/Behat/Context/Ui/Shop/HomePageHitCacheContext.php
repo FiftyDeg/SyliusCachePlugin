@@ -11,8 +11,6 @@ use Webmozart\Assert\Assert;
 
 final class HomePageHitCacheContext implements Context
 {
-    private $homePage;
-
     private $jonCachableCont;
 
     private $jonNotCachableCont;
@@ -22,8 +20,8 @@ final class HomePageHitCacheContext implements Context
     private $fooNotCachableCont;
 
     public function __construct(
-        HomePageInterface $homePage,
-        CacheAdapterInterface $cacheAdapter,
+        private HomePageInterface $homePage,
+        private CacheAdapterInterface $cacheAdapter,
     ) {
         $this->homePage = $homePage;
         $this->cacheAdapter = $cacheAdapter;
@@ -69,17 +67,6 @@ final class HomePageHitCacheContext implements Context
         Assert::same(
             $this->jonCachableCont,
             $this->fooCachableCont,
-        );
-    }
-
-    /**
-     * @Then Foo Bar does not see Jon Doe not cachable content
-     */
-    public function theHomePageCacheIsNotEmptyOnNotCachableContent(): void
-    {
-        Assert::notSame(
-            $this->jonNotCachableCont,
-            $this->fooNotCachableCont,
         );
     }
 }

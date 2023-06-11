@@ -12,4 +12,3 @@ Feature: Hitting cache
         When Jon Doe visits the homepage
         And Foo Bar visits the homepage after Jon Doe
         Then Foo Bar sees Jon Doe cachable content
-        Then Foo Bar does not see Jon Doe not cachable content

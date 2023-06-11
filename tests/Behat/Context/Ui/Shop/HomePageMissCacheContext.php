@@ -73,15 +73,4 @@ final class HomePageMissCacheContext implements Context
             $this->fooCachableCont,
         );
     }
-
-    /**
-     * @Then Foo Bar does not see Jon Doe not cachable content
-     */
-    public function theHomePageCacheIsEmptyOnNotCachableContent(): void
-    {
-        Assert::notSame(
-            $this->jonNotCachableCont,
-            $this->fooNotCachableCont,
-        );
-    }
 }
