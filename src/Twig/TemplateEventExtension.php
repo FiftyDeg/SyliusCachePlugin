@@ -44,7 +44,7 @@ final class TemplateEventExtension extends AbstractExtension
     public function render($eventName, array $context = [], int $cacheTtl = -1): string
     {
         if (is_string($eventName)) {
-            $eventCacheTTL = $this->configLoader->getEventCacheTTL($eventName);
+            $eventCacheTTL = $this->configLoader->getEventCacheTtl($eventName);
 
             if ($cacheTtl === -1) {
                 $cacheTtl = $eventCacheTTL;

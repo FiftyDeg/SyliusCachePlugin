@@ -23,13 +23,13 @@ final class Configuration implements ConfigurationInterface
         $rootChildren = $rootNode->children();
         $rootChildren->booleanNode('is_cache_enabled')->defaultValue(true);
         $rootChildren->scalarNode('default_event_cache_ttl')->defaultValue(86400);
-        $rootChildren->scalarNode('default_event_block_cache_ttl')->defaultValue(86400);
+        $rootChildren->scalarNode('default_block_cache_ttl')->defaultValue(86400);
 
         $events = $rootChildren->arrayNode('cacheable_sylius_template_events')->arrayPrototype()->children();
 
         $events->scalarNode('name');
         $events->scalarNode('ttl');
-        $events->scalarNode('default_event_block_cache_ttl')->defaultValue(86400);
+        $events->scalarNode('default_block_cache_ttl')->defaultValue(86400);
 
         $blocks = $events->arrayNode('blocks')->arrayPrototype()->children();
 

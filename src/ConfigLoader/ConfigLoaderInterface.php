@@ -6,11 +6,11 @@ namespace FiftyDeg\SyliusCachePlugin\ConfigLoader;
 
 interface ConfigLoaderInterface
 {
-    public function getCacheableSyliusTemplateEvents(): ?array;
+    public function getCacheableTemplateEvents(): ?array;
 
     public function isCacheEnabled(): bool;
 
-    public function getEventCacheTTL(string $eventNameToSearchFor): int;
+    public function getEventCacheTtl(string $eventName): int;
 
-    public function getBlockCacheTTL(string $eventNameToSearchFor, string $blockNameToSearchFor): int;
+    public function getBlockCacheTTL(string $eventName, string $blockName): int;
 }

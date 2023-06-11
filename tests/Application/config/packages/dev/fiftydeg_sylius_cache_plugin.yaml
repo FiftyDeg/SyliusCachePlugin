@@ -1,11 +1,11 @@
 fifty_deg_sylius_cache:
   is_cache_enabled: true
   default_event_cache_ttl: 86400
-  default_event_block_cache_ttl: 86400
+  default_block_cache_ttl: 86400
   cacheable_sylius_template_events:
     - name: sylius.shop.layout.footer
       ttl: 0
-      default_event_block_cache_ttl: 86400
+      default_block_cache_ttl: 86400
       blocks:
         - name: template_event_cache_test
           ttl: 0
