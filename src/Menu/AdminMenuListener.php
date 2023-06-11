@@ -12,11 +12,9 @@ final class AdminMenuListener
     {
         $menu = $event->getMenu();
 
-        $newSubmenu =
-            $menu->getChild('fiftydeg_cache')
-            ?: $menu->addChild('fiftydeg_cache')->setLabel('Cache');
+        $submenu = $menu->getChild('fiftydeg_cache') ?? $menu->addChild('fiftydeg_cache')->setLabel('Cache');
 
-        $newSubmenu
+        $submenu
             ->addChild('shop-settings-fiftydeg-cache-flusher-index', [
                 // The route is obtained by replacing app. with app_admin_ in app.app_admin_fifty_deg_cache_flusher route
                 'route' => 'app_admin_fifty_deg_cache_index',
