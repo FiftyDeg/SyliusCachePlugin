@@ -2,4 +2,4 @@ framework:
     assets:
         packages:
             fiftyDegCacheAdmin:
-                json_manifest_path: '%kernel.project_dir%/public/fiftydeg-cache/admin/manifest.json'
+                json_manifest_path: '%kernel.project_dir%/public/fifty-deg/sylius-cache-plugin/admin/manifest.json'
