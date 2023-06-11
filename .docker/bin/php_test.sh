@@ -25,7 +25,7 @@ printf "${CYAN}\r\n********************\r\n********************\r\n** 💡 TWIG 
 docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "cd tests/Application && XDEBUG_MODE=off php bin/console lint:twig ../../src/* ./* ../Behat/*"
 
 printf "${CYAN}\r\n********************\r\n********************\r\n** 💡 YAML *********\r\n********************\r\n********************\r\n\r\n${NC}"
-docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "cd tests/Application && XDEBUG_MODE=off php bin/console lint:yaml  ../../src/ ./config ../Behat"
+docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "cd tests/Application && XDEBUG_MODE=off php bin/console lint:yaml --parse-tags  ../../src/ ./config ../Behat"
 
 printf "${CYAN}\r\n********************\r\n********************\r\n** 💡 BEHAT ********\r\n********************\r\n********************\r\n\r\n${NC}"
 docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "vendor/bin/behat --strict --tags='~@javascript'"

@@ -67,7 +67,7 @@ services:
         && printf \"\r\n********************\r\n********************\r\n** 💡 TWIG *********\r\n********************\r\n********************\r\n\r\n\"
         && XDEBUG_MODE=off php bin/console lint:twig $$PROJECT_DIR/src/* ./* $$PROJECT_DIR/tests/Behat/*
         && printf \"\r\n********************\r\n********************\r\n** 💡 YAML *********\r\n********************\r\n********************\r\n\r\n\"
-        && XDEBUG_MODE=off php bin/console lint:yaml $$PROJECT_DIR/src/ ./config $$PROJECT_DIR/tests/Behat/
+        && XDEBUG_MODE=off php bin/console lint:yaml --parse-tags $$PROJECT_DIR/src/ ./config $$PROJECT_DIR/tests/Behat/
         && printf \"\r\n********************\r\n********************\r\n** 💡 BEHAT ********\r\n********************\r\n********************\r\n\r\n\"
         && cd $$PROJECT_DIR
         && vendor/bin/behat --strict --tags='~@javascript'"
