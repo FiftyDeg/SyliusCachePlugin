@@ -39,19 +39,14 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
             return $blockFromCache;
         }
 
-        /** @var array<mixed, mixed> $contextProviders */
-        $contextProviders = $this->contextProviders;
-        /** @var ContextProviderInterface $contextProvider */
-        foreach ($contextProviders as $contextProvider) {
-            /** @var string $classToCheck */
-            $classToCheck = 'Sylius\Bundle\UiBundle\ContextProvider\ContextProviderInterface';
-            if ((!$contextProvider instanceof $classToCheck) ||
-                !$contextProvider->supports($templateBlock)) {
+        foreach ($this->contextProviders as $contextProvider) {
+            if (!$contextProvider instanceof ContextProviderInterface || !$contextProvider->supports($templateBlock)) {
                 continue;
             }
 
             $context = $contextProvider->provide($context, $templateBlock);
         }
+
         $renderedBlock = $this->twig->render($templateBlock->getTemplate(), $context);
 
         return $rendererUtilities->saveInCacheAndPrintOutputData(

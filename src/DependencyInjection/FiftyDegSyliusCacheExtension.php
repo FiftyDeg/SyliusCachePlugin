@@ -26,15 +26,6 @@ final class FiftyDegSyliusCacheExtension extends Extension
         $loader = new YamlFileLoader($container, $fileLocator);
         $loader->load('config_bundle.yaml');
 
-        $yamlToLoad = 'fiftydegSyliusCachePlugin/template_event.yaml';
-
-        /** @var bool $kernelDebug */
-        $kernelDebug = $container->getParameter('kernel.debug');
-        if ($kernelDebug) {
-            $yamlToLoad = 'fiftydegSyliusCachePlugin/debug/template_event.yaml';
-        }
-        $loader->load($yamlToLoad);
-
         foreach ($configs as $key => $param) {
             /** @var string $key */
             $container->setParameter($key, $param);

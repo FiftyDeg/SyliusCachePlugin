@@ -1,9 +1,0 @@
-services:
-    FiftyDeg\SyliusCachePlugin\Renderer\TwigTemplateBlockRenderer:
-        decorates: Sylius\Bundle\UiBundle\Renderer\TemplateBlockRendererInterface
-        arguments:
-            - '@twig'
-            - '@fifty_deg.sylius_cache_plugin.adapters.cache_adapter'
-            - '@fifty_deg.sylius_cache_plugin.config_loader.config_loader'
-            - sylius.ui.template_event.context_provider
-            
