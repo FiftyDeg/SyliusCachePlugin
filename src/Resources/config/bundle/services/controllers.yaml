@@ -3,7 +3,5 @@ services:
         class: FiftyDeg\SyliusCachePlugin\Controller\CacheFlusherController
         arguments:
             - "@fifty_deg.sylius_cache_plugin.adapters.cache_adapter"
-            - "@sylius.repository.channel"
-            - "@router"
             - "@twig"
         tags: [controller.service_arguments]
