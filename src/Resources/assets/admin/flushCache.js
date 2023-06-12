@@ -16,7 +16,7 @@ export default class FlushCache {
         $flushCacheButton.on('click', this.flushAction.bind(this));
     }
 
-    setResponseMessage(innerHTML) {
+    setResponseMessage(innerHTML, timeout = 5000) {
         const {
             $flushCacheResponse
         } = this;
@@ -27,9 +27,13 @@ export default class FlushCache {
 
         clearTimeout(this.messageTimer);
 
-        this.messageTimer = setTimeout(() => {
+        if (timeout > 0) {
+            this.messageTimer = setTimeout(() => {
+                $flushCacheResponse.empty();
+            }, timeout);
+        } else {
             $flushCacheResponse.empty();
-        }, 5000);
+        }
     }
 
     flushAction() {
@@ -42,7 +46,7 @@ export default class FlushCache {
         $flushCacheButton.addClass('loading');
         $flushCacheButton.prop('disabled', true);
 
-        this.setResponseMessage('<p>Clearing Cache...</p>');
+        this.setResponseMessage('<p>Flushing cache...</p>', 0);
 
         jquery
             .post(endpoint)
