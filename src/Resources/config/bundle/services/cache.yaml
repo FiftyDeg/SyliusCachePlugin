@@ -4,7 +4,8 @@ services:
         arguments:
             $channelContext: '@sylius.context.channel'
             $localeContext: '@sylius.context.locale'
-            $projectDir: '%kernel.project_dir%'
+            $env: '%kernel.environment%'
+            $cacheDir: '%kernel.project_dir%'
             $namespace: 'FiftyDegSyliusCache'
-            $ttl: 3600
+            $defaultTtl: 3600
 

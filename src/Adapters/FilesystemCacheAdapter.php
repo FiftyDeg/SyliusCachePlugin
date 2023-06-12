@@ -18,9 +18,10 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
     public function __construct(
         private ChannelContextInterface $channelContext,
         private LocaleContextInterface $localeContext,
-        private string $projectDir,
+        private string $env,
+        private string $cacheDir,
         private string $namespace,
-        private int $ttl,
+        private int $defaultTtl,
     ) {
         $this->cache = new FilesystemTagAwareAdapter(
             // a string used as the subdirectory of the root cache directory, where cache
@@ -29,10 +30,10 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
             // the default lifetime (in seconds) for cache items that do not define their
             // own lifetime, with a value 0 causing items to be stored indefinitely (i.e.
             // until the files are deleted)
-            $this->ttl,
+            $this->defaultTtl,
             // the main cache directory (the application needs read-write permissions on it)
             // if none is specified, a directory is created inside the system temporary directory
-            $this->projectDir . \DIRECTORY_SEPARATOR . 'var/cache/{$this->env}',
+            $this->cacheDir . \DIRECTORY_SEPARATOR . 'var/cache/' . $this->env,
         );
     }
 
