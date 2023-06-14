@@ -87,10 +87,7 @@ final class CachedController
 ### Lazy load dynamic content
 You can lazy load dynamic content in a cached template by including the `fiftyDegSyliusCachePluginShop` webpack configuration in your `webpack.config.js` file (see <a href="./installation.md" target="_blank">Installation</a>).
 
-For example, if you want to cache the whole header and keep the dynamic behaviour of the shopping cart button, you can:
-
-### Flush cache
-You can flush the entire ecosystem cache via `php bin/console c:c` or you can flush just Fifty Deg cache by visiting `https://domain.com/admin/fiftydeg-cache/index/`  
+For example, if you want to cache the whole header and keep the dynamic behaviour of the shopping cart button, you can add the following code to the code:
 
 ```twig
 <div
@@ -102,6 +99,18 @@ You can flush the entire ecosystem cache via `php bin/console c:c` or you can fl
     <!-- Add your facade here, content will be replaced dynamically -->
 </div>
 ```
+
+**IMPORTANT:** If you do not want to use this feature, please, remember to disable the following block from sylius template events:
+```yaml
+sylius_ui:
+    events:
+        sylius.shop.layout.javascripts:
+            blocks:
+                fiftydeg_cache_scripts:
+                    enabled: false
+```
+### Flush cache
+You can flush the entire ecosystem cache via `php bin/console c:c` or you can flush just Fifty Deg cache by visiting `https://domain.com/admin/fiftydeg-cache/index/`  
 ---
 
 <a href="./customization.md" target="_blank">Next: Customization</a>
