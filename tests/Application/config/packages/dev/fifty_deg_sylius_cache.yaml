@@ -9,4 +9,4 @@ fifty_deg_sylius_cache:
           ttl: 3600
 
     - name: sylius.shop.layout.footer
-      block_default_ttl: 86400
+      ttl: 86400

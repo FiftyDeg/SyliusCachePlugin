@@ -6,7 +6,7 @@ namespace FiftyDeg\SyliusCachePlugin\Adapters;
 
 interface CacheAdapterInterface
 {
-    public const TTL_ONE_HOUR = 3360;
+    public const TTL_ONE_HOUR = 3600;
 
     public const TTL_ONE_DAY = 86400;
 
