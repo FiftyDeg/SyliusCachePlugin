@@ -9,16 +9,12 @@ use Symfony\Bridge\Twig\AppVariable;
 
 final class DataSerializer implements DataSerializerInterface
 {
-    public function __construct()
-    {
-    }
-
     /**
-     * @param array<mixed>|array<array-key, AppVariable|RequestConfiguration|string>|string $data
+     * @param array<mixed>|string|int $data
      */
-    public function safelySerialize($data): string
+    public function safelySerialize(mixed $data): string
     {
-        if (is_string($data)) {
+        if (is_string($data) || is_numeric($data)) {
             return serialize($data);
         }
 
@@ -48,15 +44,5 @@ final class DataSerializer implements DataSerializerInterface
         }
 
         return serialize($serializable);
-    }
-
-    /**
-     * @param array<array-key, AppVariable|RequestConfiguration|string>|string $nameToUse
-     * @param array $context
-     * @param int $cacheTtl
-     */
-    public function buildCacheKey($nameToUse, $context, $cacheTtl): string
-    {
-        return $this->safelySerialize($nameToUse) . $this->safelySerialize($context) . $cacheTtl;
     }
 }

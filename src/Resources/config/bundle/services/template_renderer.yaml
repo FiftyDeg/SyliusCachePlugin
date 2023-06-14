@@ -5,4 +5,5 @@ services:
             - '@twig'
             - '@fifty_deg.sylius_cache_plugin.adapters.cache_adapter'
             - '@fifty_deg.sylius_cache_plugin.config_loader.config_loader'
+            - '@fifty_deg.sylius_cache_plugin.fifty_deg.services.data_serializer'
             - !tagged_iterator sylius.ui.template_event.context_provider

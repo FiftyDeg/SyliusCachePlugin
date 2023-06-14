@@ -43,43 +43,38 @@ final class TemplateEventExtension extends AbstractExtension
      */
     public function render($eventName, array $context = [], int $cacheTtl = -1): string
     {
-        if (is_string($eventName)) {
-            $eventCacheTTL = $this->configLoader->getEventCacheTtl($eventName);
+        $eventNames = (array) $eventName;
+        $renderedParts = [];
 
+        foreach ($eventNames as $event) {
             if ($cacheTtl === -1) {
-                $cacheTtl = $eventCacheTTL;
+                $eventCacheTtl = $this->configLoader->getEventCacheTtl($event);
+                $cacheTtl = $eventCacheTtl;
             }
+
+            if ($cacheTtl <= 0) {
+                $renderedParts[] = $this->templateRenderer->render((array) $event, $context);
+
+                continue;
+            }
+
+            $cacheKey = $this->dataSerializer->safelySerialize([$event, $context, $cacheTtl]);
+
+            /** @var string|null $cacheValue */
+            $cacheValue = $this->cacheAdapter->get($cacheKey);
+
+            if (null !== $cacheValue && '' !== $cacheValue) {
+                $renderedParts[] = $cacheValue;
+
+                continue;
+            }
+
+            $renderedHtml = $this->templateRenderer->render((array) $event, $context);
+            $this->cacheAdapter->set($cacheKey, $renderedHtml, $cacheTtl);
+
+            $renderedParts[] = $renderedHtml;
         }
 
-        if ($cacheTtl <= 0) {
-            return $this->doRender($eventName, $context);
-        }
-
-        $cacheKey = $this->dataSerializer->buildCacheKey($eventName, $context, $cacheTtl);
-
-        /** @var string|null $cacheValue */
-        $cacheValue = $this->cacheAdapter->get($cacheKey);
-
-        if (null !== $cacheValue &&
-            $cacheValue !== '') {
-            return $cacheValue;
-        }
-
-        $renderedHtml = $this->doRender($eventName, $context);
-
-        $this->cacheAdapter->set($cacheKey, $renderedHtml, $cacheTtl);
-
-        return $renderedHtml;
-    }
-
-    private function doRender(string|array $eventName, array $context = []): string
-    {   /**
-        * @psalm-var non-empty-list<string> $eventNames
-        */
-        $eventNames = is_array($eventName)
-            ? $eventName
-            : [$eventName];
-
-        return $this->templateRenderer->render($eventNames, $context);
+        return implode("\n", $renderedParts);
     }
 }
