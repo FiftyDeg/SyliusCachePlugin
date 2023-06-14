@@ -10,7 +10,7 @@ printf "${CYAN}\r\n********************\r\n********************\r\n** 💡 STAND
 docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "XDEBUG_MODE=off php vendor/bin/ecs check"
 
 printf "${CYAN}\r\n********************\r\n********************\r\n** 💡 PSALM ********\r\n********************\r\n********************\r\n\r\n${NC}"
-docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "XDEBUG_MODE=off php vendor/bin/psalm"
+docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "XDEBUG_MODE=off php vendor/bin/psalm --no-cache"
 
 printf "${CYAN}\r\n********************\r\n********************\r\n** 💡 PHPSTAN ******\r\n********************\r\n********************\r\n\r\n${NC}"
 docker exec -u root -it "fiftydeg_sylius_cache_plugin_php" bash -c "XDEBUG_MODE=off php vendor/bin/phpstan analyse -c phpstan.neon -l max src/"
