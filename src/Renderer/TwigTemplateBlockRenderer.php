@@ -6,6 +6,7 @@ namespace FiftyDeg\SyliusCachePlugin\Renderer;
 
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
+use FiftyDeg\SyliusCachePlugin\Services\DataSerializerInterface;
 use Sylius\Bundle\UiBundle\ContextProvider\ContextProviderInterface;
 use Sylius\Bundle\UiBundle\Registry\TemplateBlock;
 use Sylius\Bundle\UiBundle\Renderer\TemplateBlockRendererInterface;
@@ -17,26 +18,21 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
         private Environment $twig,
         private CacheAdapterInterface $cacheAdapter,
         private ConfigLoaderInterface $configLoader,
+        private DataSerializerInterface $dataSerializer,
         private iterable $contextProviders,
     ) {
     }
 
     public function render(TemplateBlock $templateBlock, array $context = []): string
     {
-        $rendererUtilities = new TwigTemplateBlockRendererUtilities($this->configLoader, $this->cacheAdapter);
-        $cacheForBlock = $rendererUtilities->getCacheForBlock($templateBlock, $context);
+        $cacheTtl = $this->configLoader->getBlockCacheTtl($templateBlock->getEventName(), $templateBlock->getName());
+        $cacheKey = $this->dataSerializer->safelySerialize([$templateBlock->getName(), $context, $cacheTtl]);
 
-        /** @var int $blockCacheTTL */
-        $blockCacheTTL = $cacheForBlock['blockCacheTTL'];
+        /** @var string|null $cacheValue */
+        $cacheValue = $this->cacheAdapter->get($cacheKey);
 
-        /** @var string|null $blockFromCache */
-        $blockFromCache = $cacheForBlock['blockFromCache'];
-
-        /** @var string $cacheKey */
-        $cacheKey = $cacheForBlock['cacheKey'];
-
-        if (null !== $blockFromCache) {
-            return $blockFromCache;
+        if (null !== $cacheValue) {
+            return $cacheValue;
         }
 
         foreach ($this->contextProviders as $contextProvider) {
@@ -49,12 +45,10 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
 
         $renderedBlock = $this->twig->render($templateBlock->getTemplate(), $context);
 
-        return $rendererUtilities->saveInCacheAndPrintOutputData(
-            $this->cacheAdapter,
-            $cacheKey,
-            $renderedBlock,
-            $blockCacheTTL,
-            $templateBlock,
-        );
+        if ($cacheTtl > 0) {
+            $this->cacheAdapter->set($cacheKey, $renderedBlock, $cacheTtl);
+        }
+
+        return $renderedBlock;
     }
 }

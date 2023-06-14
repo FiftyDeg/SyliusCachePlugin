@@ -2,9 +2,9 @@ sylius_ui:
     events:
         sylius.shop.layout.footer:
             blocks:
-                template_event_cache_test:
+                cached_block_test:
                     template: "@FiftyDegSyliusCachePlugin/Test/Shop/Layout/Footer/_templateEventCacheTest.html.twig"
                     priority: 100
-                template_event_cache_test_not_cached:
+                non_cached_block_test:
                     template: "@FiftyDegSyliusCachePlugin/Test/Shop/Layout/Footer/_templateEventCacheTestNotCached.html.twig"
                     priority: 100

@@ -13,14 +13,6 @@ final class ConfigLoader implements ConfigLoaderInterface
     ) {
     }
 
-    public function getCacheableTemplateEvents(): array
-    {
-        /** @var array|null $cacheableEvents */
-        $cacheableEvents = $this->getParam('cacheable_sylius_template_events');
-
-        return $cacheableEvents ?? [];
-    }
-
     public function isCacheEnabled(): bool
     {
         /** @var bool|null $isCacheEnabled */
@@ -31,159 +23,92 @@ final class ConfigLoader implements ConfigLoaderInterface
 
     public function getEventCacheTtl(string $eventName): int
     {
-        if (
-            !$this->isCacheEnabled() ||
-            !$this->isEventCacheEnabled($eventName)
-        ) {
+        if (!$this->isCacheEnabled()) {
             return 0;
         }
 
-        /** @var array<array-key, array<array-key, mixed>> $cacheableEvents */
-        $cacheableEvents = $this->getCacheableTemplateEvents();
+        /** @var array<array-key, array<array-key, mixed>> $templateEvents */
+        $templateEvents = $this->getTemplateEvents();
 
-        foreach ($cacheableEvents as $cacheSettings) {
-            if ($cacheSettings['name'] !== $eventName) {
+        foreach ($templateEvents as $templateEvent) {
+            if ($templateEvent['name'] !== $eventName) {
                 continue;
             }
 
-            if (!$this->isEventCacheable($cacheSettings)) {
+            $blockDefaultTtl = (int) $templateEvent['block_default_ttl'];
+
+            $blocks = isset($templateEvent['blocks'])
+                ? (array) $templateEvent['blocks']
+                : [];
+
+            if ($blockDefaultTtl > 0 || count($blocks) > 0) {
+                // Ignore template event cache settings since there's at least one setting for its blocks
                 return 0;
             }
 
-            if (isset($cacheSettings['ttl'])) {
-                return (int) $cacheSettings['ttl'];
-            }
+            return (int) $templateEvent['ttl'];
         }
 
-        return $this->getEventDefaultCacheTtl();
+        return 0;
     }
 
-    public function getBlockCacheTTL(string $eventName, string $blockName): int
+    public function getBlockCacheTtl(string $eventName, string $blockName): int
     {
-        $result = 0;
+        $ttl = 0;
 
         if (!$this->isCacheEnabled()) {
-            return $result;
+            return $ttl;
         }
 
-        $result = $this->getBlockDefaultCacheTtl();
+        $templateEvents = $this->getTemplateEvents();
 
-        /** @var array<array-key, array<array-key, array<array-key, mixed>>> $cacheableEvents */
-        $cacheableEvents = $this->getCacheableTemplateEvents();
+        /** @var array $eventCacheConfig */
+        foreach ($templateEvents as $eventCacheConfig) {
+            if ((string) $eventCacheConfig['name'] !== $eventName) {
+                continue;
+            }
 
-        foreach ($cacheableEvents as $cacheSettings) {
-            /** @var string $blockName */
-            $blockName = $cacheSettings['name'];
+            if (isset($eventCacheConfig['block_default_ttl'])) {
+                $ttl = (int) $eventCacheConfig['block_default_ttl'];
+            }
 
-            if ($blockName === $eventName) {
-                if (isset($cacheSettings['default_block_cache_ttl'])) {
-                    $result = (int) $cacheSettings['default_block_cache_ttl'];
+            $templateEventBlocks = $this->getTemplateEventBlocks($eventName);
+
+            /** @var array $templateEventBlock */
+            foreach ($templateEventBlocks as $templateEventBlock) {
+                if ($templateEventBlock['name'] !== $blockName) {
+                    continue;
                 }
 
-                $innerBlockTTL = $this->getInnerBlocksTTL($cacheSettings, $blockName);
-
-                if ($innerBlockTTL !== -1) {
-                    $result = $innerBlockTTL;
-                }
+                return (int) $templateEventBlock['ttl'];
             }
         }
 
-        return $result;
+        return $ttl;
     }
 
-    private function isEventCacheEnabled(string $eventName): bool
+    private function getTemplateEvents(): array
     {
-        /** @var array<array-key, array<array-key, mixed>> $cacheableEvents */
-        $cacheableEvents = $this->getCacheableTemplateEvents();
+        /** @var array|null $templateEvents */
+        $templateEvents = $this->getParam('template_events');
 
-        foreach ($cacheableEvents as $cacheSettings) {
-            if (
-                $cacheSettings['name'] === $eventName &&
-                isset($cacheSettings['ttl']) &&
-                $cacheSettings['ttl'] <= 0
-            ) {
-                return false;
-            }
-        }
-
-        return true;
+        return $templateEvents ?? [];
     }
 
-    /**
-     * @param array<array-key, mixed> $cacheSettings
-     */
-    private function isEventCacheable($cacheSettings): bool
+    private function getTemplateEventBlocks(string $eventName): array
     {
-        if (isset($cacheSettings['blocks']) &&
-            is_array($cacheSettings['blocks']) &&
-            count($cacheSettings['blocks']) > 0) {
-            /** @var array<array-key, array<array-key, mixed>> $cacheBlocks */
-            $cacheBlocks = $cacheSettings['blocks'];
+        $templateEvents = $this->getTemplateEvents();
 
-            foreach ($cacheBlocks as $eventBlock) {
-                if (isset($eventBlock['ttl']) &&
-                    $eventBlock['ttl'] > 0) {
-                    return true;
-                }
+        /** @var array $templateEvent */
+        foreach ($templateEvents as $templateEvent) {
+            if ((string) $templateEvent['name'] !== $eventName) {
+                continue;
             }
 
-            return false;
+            return (array) $templateEvent['blocks'];
         }
 
-        return false;
-    }
-
-    private function getEventDefaultCacheTtl(): int
-    {
-        /** @var int $defaultTtl */
-        $defaultTtl = $this->getParam('default_event_cache_ttl');
-
-        return $defaultTtl;
-    }
-
-    private function getBlockDefaultCacheTtl(): int
-    {
-        /** @var int $defaultTtl */
-        $defaultTtl = $this->getParam('default_block_cache_ttl');
-
-        return $defaultTtl;
-    }
-
-    /**
-     * @param array<array-key, array<array-key, mixed>> $cacheSettings
-     * @param string $blockName
-     */
-    private function getInnerBlocksTTL($cacheSettings, $blockName): int
-    {
-        if (isset($cacheSettings['blocks']) &&
-            count($cacheSettings['blocks']) > 0) {
-            /** @var array<array-key, array<array-key, mixed>> $cacheBlocks */
-            $cacheBlocks = $cacheSettings['blocks'];
-
-            return $this->getInnerBlockTTL($cacheBlocks, $blockName);
-        }
-
-        return -1;
-    }
-
-    /**
-     * @param array<array-key, array<array-key, mixed>> $cacheBlocks
-     * @param string $blockName
-     */
-    private function getInnerBlockTTL($cacheBlocks, $blockName): int
-    {
-        foreach ($cacheBlocks as $eventBlock) {
-            if ($eventBlock['name'] === $blockName) {
-                if (isset($eventBlock['ttl'])) {
-                    /** @var int $eventTtl */
-                    $eventTtl = $eventBlock['ttl'];
-
-                    return $eventTtl;
-                }
-            }
-        }
-
-        return -1;
+        return [];
     }
 
     private function getParam(string $paramName): mixed

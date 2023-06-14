@@ -22,14 +22,12 @@ final class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
         $rootChildren = $rootNode->children();
         $rootChildren->booleanNode('is_cache_enabled')->defaultValue(true);
-        $rootChildren->scalarNode('default_event_cache_ttl')->defaultValue(86400);
-        $rootChildren->scalarNode('default_block_cache_ttl')->defaultValue(86400);
 
-        $events = $rootChildren->arrayNode('cacheable_sylius_template_events')->arrayPrototype()->children();
+        $events = $rootChildren->arrayNode('template_events')->arrayPrototype()->children();
 
         $events->scalarNode('name');
-        $events->scalarNode('ttl');
-        $events->scalarNode('default_block_cache_ttl')->defaultValue(86400);
+        $events->scalarNode('ttl')->defaultValue(0);
+        $events->scalarNode('block_default_ttl')->defaultValue(0);
 
         $blocks = $events->arrayNode('blocks')->arrayPrototype()->children();
 
