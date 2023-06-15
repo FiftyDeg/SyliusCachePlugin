@@ -1,0 +1,6 @@
+services:
+    fifty_deg.sylius_cache_plugin.cache.renderer.twig_template_block_renderer_utilities:
+        class: FiftyDeg\SyliusCachePlugin\Renderer\TwigTemplateBlockRendererUtilities
+        arguments:
+            - "@fifty_deg.sylius_cache_plugin.config_loader.config_loader"
+            - "@fifty_deg.sylius_cache_plugin.adapters.cache_adapter"

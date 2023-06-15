@@ -17,8 +17,13 @@ class HomePage extends SymfonyPage implements HomePageInterface
         return $this->getElement('cacheableElement')->getText();
     }
 
+    public function getNotCacheableElementRandomContent(): string
+    {
+        return $this->getElement('notCacheableElement')->getText();
+    }
+
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRouteName(): string
     {
@@ -26,12 +31,13 @@ class HomePage extends SymfonyPage implements HomePageInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function getDefinedElements(): array
     {
         return array_merge(parent::getDefinedElements(), [
-            'cacheableElement' => '#cacheableElement'
+            'cacheableElement' => '#cacheableElement',
+            'notCacheableElement' => '#notCacheableElement',
         ]);
     }
 }

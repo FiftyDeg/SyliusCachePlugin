@@ -1,0 +1,9 @@
+fifty_deg_sylius_cache:
+  is_cache_enabled: true
+  template_events:
+    - name: sylius.shop.layout.footer
+      blocks:
+        - name: cached_block_test
+          ttl: 86400
+        - name: non_cached_block_test
+          ttl: 0

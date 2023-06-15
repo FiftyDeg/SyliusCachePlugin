@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace FiftyDeg\SyliusCachePlugin\Adapters;
 
 use Exception;
-use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
-use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
 use Sylius\Component\Channel\Context\ChannelContextInterface;
 use Sylius\Component\Locale\Context\LocaleContextInterface;
+use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
+use Symfony\Component\Cache\CacheItem;
 
 final class FilesystemCacheAdapter implements CacheAdapterInterface
 {
@@ -16,13 +16,12 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
     private $cache;
 
     public function __construct(
-        private ConfigLoaderInterface $configLoader,
         private ChannelContextInterface $channelContext,
         private LocaleContextInterface $localeContext,
-        private string $projectDir,
         private string $env,
+        private string $cacheDir,
         private string $namespace,
-        private int $ttl
+        private int $defaultTtl,
     ) {
         $this->cache = new FilesystemTagAwareAdapter(
             // a string used as the subdirectory of the root cache directory, where cache
@@ -31,19 +30,15 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
             // the default lifetime (in seconds) for cache items that do not define their
             // own lifetime, with a value 0 causing items to be stored indefinitely (i.e.
             // until the files are deleted)
-            $this->ttl,
+            $this->defaultTtl,
             // the main cache directory (the application needs read-write permissions on it)
             // if none is specified, a directory is created inside the system temporary directory
-            $this->projectDir . DIRECTORY_SEPARATOR . "var/cache/{$this->env}"
+            $this->cacheDir . \DIRECTORY_SEPARATOR . 'var/cache/' . $this->env,
         );
     }
 
     public function set(string $key, mixed $value, ?int $expiresAfter = null): bool
     {
-        if (!$this->isCacheEnabled()) {
-            return false;
-        }
-
         try {
             $hashedKey = $this->hashKey($key);
             $cacheItem = $this->cache->getItem($hashedKey);
@@ -62,10 +57,6 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function get(string $key): mixed
     {
-        if (!$this->isCacheEnabled()) {
-            return null;
-        }
-
         $hashedKey = $this->hashKey($key);
 
         $cacheItem = $this->cache->getItem($hashedKey);
@@ -77,9 +68,10 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function delete(string $key): bool
     {
+        /** @var CacheItem $cacheItem */
         $cacheItem = $this->get($key);
 
-        if (!($cacheItem && $cacheItem->isHit())) {
+        if (!$cacheItem->isHit()) {
             return false;
         }
 
@@ -95,22 +87,18 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function getCache(): ?FilesystemTagAwareAdapter
     {
-        return $this->isCacheEnabled()
-            ? $this->cache
-            : null;
-    }
-
-    private function isCacheEnabled()
-    {
-        return $this->configLoader->isCacheEnabled();
+        return $this->cache;
     }
 
     private function hashKey(string $key): string
     {
         $channelCode = $this->channelContext->getChannel()->getCode();
-        $localeCode  = $this->localeContext->getLocaleCode();
+        if (null === $channelCode) {
+            $channelCode = '';
+        }
+        $localeCode = $this->localeContext->getLocaleCode();
 
-        $key = $channelCode . "__" . $localeCode . "__" . $key;
+        $key = $channelCode . '__' . $localeCode . '__' . $key;
 
         return hash('md5', $key);
     }

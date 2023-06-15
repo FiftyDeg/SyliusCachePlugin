@@ -1,0 +1,10 @@
+sylius_ui:
+    events:
+        sylius.shop.layout.footer:
+            blocks:
+                cached_block_test:
+                    template: "@FiftyDegSyliusCachePlugin/Test/Shop/Layout/Footer/_templateEventCacheTest.html.twig"
+                    priority: 100
+                non_cached_block_test:
+                    template: "@FiftyDegSyliusCachePlugin/Test/Shop/Layout/Footer/_templateEventCacheTestNotCached.html.twig"
+                    priority: 100

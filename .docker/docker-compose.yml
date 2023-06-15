@@ -6,7 +6,7 @@ services:
     build:
       context: ./mysql
     environment:
-      - MYSQL_DATABASE=${COMPOSE_PROJECT_NAME}_mysql_${APP_ENV}
+      - MYSQL_DATABASE=${COMPOSE_PROJECT_NAME}_mysql
       - MYSQL_ROOT_PASSWORD=mysql
     ports:
       - 3306:3306
@@ -14,6 +14,10 @@ services:
       - sylius_plugin_db:/var/lib/mysql:rw
     networks:
       - sylius-plugin-network
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        timeout: 5s
+        retries: 10
 
   php:
     container_name: "${COMPOSE_PROJECT_NAME}_php"
@@ -21,13 +25,15 @@ services:
     build:
       context: ./php
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     environment:
       - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE:-UTC}
       - COMPOSER_MEMORY_LIMIT=-1
       - PHP_INI_MEMORY_LIMIT=2G
       - PHP_INI_ERROR_REPORTING=E_ALL
       - COMPOSER_HOME=$HOME/.config/composer
+      - CONTAINER_NAME=${COMPOSE_PROJECT_NAME}_nginx
     expose:
       - 9000
     volumes:
@@ -48,22 +54,19 @@ services:
     command: >
         bash -c
         "composer install --no-interaction --no-scripts
-        && echo Update chown
         && chown $HOST_UID:$HOST_GID -R ./vendor 
-        && echo Create node symlink
-        && yes | php bin/create_node_symlink.php
         && cd ./tests/Application
         && mkdir -p ./var/log ./var/cache ./public/media/cache ./public/media/image
         && chown $HOST_UID:$HOST_GID -R ./var
         && chown $HOST_UID:$HOST_GID -R ./public
         && echo Checking requirements
-        && yes | php bin/console sylius:install:check-requirements
-        && yes | php bin/console sylius:install --no-interaction --verbose --env ${APP_ENV}
-        && yes | php bin/console sylius:fixtures:load default --no-interaction
-        && yes | php bin/console sylius:install:assets
-        && yes | php bin/console sylius:theme:assets:install public
-        && yes | php bin/console asset:install
-        && yes | php bin/console doctrine:migrations:migrate
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:check-requirements
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install --no-interaction --verbose --env ${APP_ENV}
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:fixtures:load default --no-interaction
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:assets
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:theme:assets:install public
+        && yes | APP_ENV=${APP_ENV} php bin/console asset:install
+        && yes | APP_ENV=${APP_ENV} php bin/console doctrine:migrations:migrate
         && php-fpm"
 
   nginx:
@@ -103,7 +106,7 @@ services:
     command: >
         bash -c 
         "cd ./tests/Application 
-        && yarn
+        && yarn 
         && GULP_ENV=prod yarn watch"
 
 networks:

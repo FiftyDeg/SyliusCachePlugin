@@ -13,11 +13,8 @@ namespace FiftyDeg\SyliusCachePlugin\Twig;
 
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
-use Exception;
-use Sylius\Bundle\ResourceBundle\Controller\RequestConfiguration;
+use FiftyDeg\SyliusCachePlugin\Services\DataSerializerInterface;
 use Sylius\Bundle\UiBundle\Renderer\TemplateEventRendererInterface;
-use Symfony\Bridge\Twig\AppVariable;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -27,11 +24,11 @@ use Twig\TwigFunction;
 final class TemplateEventExtension extends AbstractExtension
 {
     public function __construct(
-        private TemplateEventRendererInterface $templateEventRenderer,
+        private TemplateEventRendererInterface $templateRenderer,
         private CacheAdapterInterface $cacheAdapter,
         private ConfigLoaderInterface $configLoader,
-    )
-    {
+        private DataSerializerInterface $dataSerializer,
+    ) {
     }
 
     public function getFunctions(): array
@@ -43,89 +40,41 @@ final class TemplateEventExtension extends AbstractExtension
 
     /**
      * @param string|string[] $eventName
-     * @param array $context
-     * @param int $cacheTtl
      */
-    public function render(string|array $eventName, array $context = [], int $cacheTtl = 0): string
+    public function render($eventName, array $context = [], int $cacheTtl = -1): string
     {
-        if (is_string($eventName) && empty($cacheTtl)) {
-            $cacheTtl = $this->getTemplateEventCacheTtl($eventName);
-        }
+        $eventNames = (array) $eventName;
+        $renderedParts = [];
 
-        if (empty($cacheTtl)) {
-            return $this->doRender($eventName, $context);
-        }
-
-        $cacheKey = $this->safelySerialize($eventName) . $this->safelySerialize($context) . $cacheTtl;
-
-        $cacheValue = $this->cacheAdapter->get($cacheKey);
-
-        if (!is_null($cacheValue)) {
-            return $cacheValue;
-        }
-
-        $renderedHtml = $this->doRender($eventName, $context);
-
-        $this->cacheAdapter->set($cacheKey, $renderedHtml, $cacheTtl);
-
-        return $renderedHtml;
-    }
-
-    private function getTemplateEventCacheTtl(string $eventName): int
-    {
-        $cacheableTemplateEvents = $this->configLoader->getCacheableSyliusTempalteEvents();
-
-        foreach($cacheableTemplateEvents as $cacheSettings) {
-            if ($cacheSettings['name'] === $eventName) {
-                return (int) $cacheSettings['ttl'];
+        foreach ($eventNames as $event) {
+            if ($cacheTtl === -1) {
+                $eventCacheTtl = $this->configLoader->getEventCacheTtl($event);
+                $cacheTtl = $eventCacheTtl;
             }
-        }
 
-        return 0;
-    }
-
-    private function doRender(string|array $eventName, array $context = []): string
-    {   /**
-        * @psalm-var non-empty-list<string> $eventNames
-        */
-        $eventNames = is_array($eventName)
-            ? $eventName
-            : [$eventName];
-
-        return $this->templateEventRenderer->render($eventNames, $context);
-    }
-
-    private function safelySerialize(mixed $data): string
-    {
-        if (is_string($data)) {
-            return serialize($data);
-        }
-
-        $serializable = [];
-
-        foreach ($data as $key => $val) {
-            if ($val instanceof RequestConfiguration) {
-                $serializable[$key] = $val->getRequest()->getPathInfo();
+            if ($cacheTtl <= 0) {
+                $renderedParts[] = $this->templateRenderer->render((array) $event, $context);
 
                 continue;
             }
 
-            if ($val instanceof AppVariable) {
-                $serializable[$key] = $val->getEnvironment();
+            $cacheKey = $this->dataSerializer->safelySerialize([$event, $context, $cacheTtl]);
+
+            /** @var string|null $cacheValue */
+            $cacheValue = $this->cacheAdapter->get($cacheKey);
+
+            if (null !== $cacheValue && '' !== $cacheValue) {
+                $renderedParts[] = $cacheValue;
 
                 continue;
             }
 
-            else {
-                try {
-                    $serializable[$key] = serialize($val);
-                } catch (Exception $e) {
-                    // This is a workaround to create a (non safe) cache key for data containing closures
-                    $serializable[$key] = $key . "-non-serializable";
-                }
-            }
+            $renderedHtml = $this->templateRenderer->render((array) $event, $context);
+            $this->cacheAdapter->set($cacheKey, $renderedHtml, $cacheTtl);
+
+            $renderedParts[] = $renderedHtml;
         }
 
-        return serialize($serializable);
+        return implode("\n", $renderedParts);
     }
 }

@@ -1,27 +1,52 @@
 import jquery from 'jquery';
 
-document.addEventListener('DOMContentLoaded', () => {
-    const $flushCacheButton = jquery('.js__flushCacheButton');
-    const $flushCacheResponse = jquery('.js__flushCacheResponse');
+export default class FlushCache {
+    constructor() {
+        this.$flushCacheButton = jquery('.js__flushCacheButton');
+        this.$flushCacheResponse = jquery('.js__flushCacheResponse');
 
-    const endpoint = $flushCacheButton.data('flush-cache-url');
-    let messageTimer = 0;
+        this.messageTimer = 0;
+    }
 
-    const setResponseMessage = (innerHTML) => {
+    run() {
+        const {
+            $flushCacheButton
+        } = this;
+
+        $flushCacheButton.on('click', this.flushAction.bind(this));
+    }
+
+    setResponseMessage(innerHTML, timeout = 5000) {
+        const {
+            $flushCacheResponse
+        } = this;
+
         $flushCacheResponse
             .empty()
             .append(innerHTML)
 
-        clearTimeout(messageTimer);
-        messageTimer = setTimeout(() => {
+        clearTimeout(this.messageTimer);
+
+        if (timeout > 0) {
+            this.messageTimer = setTimeout(() => {
+                $flushCacheResponse.empty();
+            }, timeout);
+        } else {
             $flushCacheResponse.empty();
-        }, 5000);
+        }
     }
 
-    const flushCache = () => {
-        $flushCacheButton.addClass('loading');
+    flushAction() {
+        const {
+            $flushCacheButton
+        } = this;
 
-        setResponseMessage('<p>Clearing Cache...</p>');
+        const endpoint = $flushCacheButton.data('flush-cache-url');
+
+        $flushCacheButton.addClass('loading');
+        $flushCacheButton.prop('disabled', true);
+
+        this.setResponseMessage('<p>Flushing cache...</p>', 0);
 
         jquery
             .post(endpoint)
@@ -31,18 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? 'Cache cleared successfully!'
                     : 'Something went wrong.';
 
-                setResponseMessage(`<p>${message}</p>`);
+                this.setResponseMessage(`<p>${message}</p>`);
             })
             .catch((err) => {
                 const message = err.message || 'Something went wrong.';
 
-                setResponseMessage(`<p>${message}</p>`);
+                this.setResponseMessage(`<p>${message}</p>`);
             })
             .always(() => {
                 $flushCacheButton.removeClass('loading');
+                $flushCacheButton.prop('disabled', false);
             })
     }
+}
 
-
-    $flushCacheButton.on('click', flushCache);
-});

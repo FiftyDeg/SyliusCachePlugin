@@ -1,0 +1,20 @@
+name: CI
+on:
+  push:
+    tags:
+      - "*"
+
+env: 
+  PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+  PACKAGIST_REPO_URL: ${{ secrets.PACKAGIST_REPO_URL }}
+
+jobs:
+
+  packagist:
+    name: Packagist Update
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Packagist
+        run: curl -XPOST -H'content-type:application/json' 'https://packagist.org/api/update-package?username=Fifty%20Deg&apiToken=$PACKAGIST_TOKEN' -d '{"repository":{"url":"$PACKAGIST_REPO_URL"}}'
+

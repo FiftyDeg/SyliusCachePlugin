@@ -15,15 +15,19 @@ final class FiftyDegSyliusCacheExtension extends Extension
     /**
      * @psalm-suppress UnusedVariable
      */
-    public function load(array $config, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
-        $config = $this->processConfiguration($this->getConfiguration([], $container), $config);
+        /** @var ConfigurationInterface $process */
+        $process = $this->getConfiguration([], $container);
 
-        $fileLocator = new FileLocator(__DIR__ . "/../Resources/config");
+        /** @var array<array-key, array> $configs */
+        $configs = $this->processConfiguration($process, $configs);
+        $fileLocator = new FileLocator(__DIR__ . '/../Resources/config');
         $loader = new YamlFileLoader($container, $fileLocator);
         $loader->load('config_bundle.yaml');
 
-        foreach ($config as $key => $param) {
+        foreach ($configs as $key => $param) {
+            /** @var string $key */
             $container->setParameter($key, $param);
         }
     }

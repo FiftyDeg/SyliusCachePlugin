@@ -3,4 +3,3 @@ services:
         class: FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoader
         arguments:
             - '@parameter_bag'
-        tags: [controller.service_arguments]

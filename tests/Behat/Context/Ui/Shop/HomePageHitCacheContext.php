@@ -11,29 +11,18 @@ use Webmozart\Assert\Assert;
 
 final class HomePageHitCacheContext implements Context
 {
-    /**
-     * @var HomePageInterface
-     */
-    private $homePage;
+    private $johnCacheableCont;
 
-    /**
-     * @var string
-     */
-    private $jonDoeRandomContent;
+    private $johnNotCacheableCont;
 
-    /**
-     * @var string
-     */
-    private $fooBarRandomContent;
+    private $fooCacheableCont;
 
-    /**
-     * @param HomePageInterface $homePage
-     */
+    private $fooNotCacheableCont;
+
     public function __construct(
-        HomePageInterface $homePage,
-        CacheAdapterInterface $cacheAdapter
-    )
-    {
+        private HomePageInterface $homePage,
+        private CacheAdapterInterface $cacheAdapter,
+    ) {
         $this->homePage = $homePage;
         $this->cacheAdapter = $cacheAdapter;
     }
@@ -47,34 +36,37 @@ final class HomePageHitCacheContext implements Context
     }
 
     /**
-     * @When Jon Doe visits the homepage
+     * @When John Doe visits the homepage
      */
-    public function jonDoeVisitsHomePage(): void
+    public function johnDoeVisitsHomePage(): void
     {
         $this->homePage->open();
 
-        $this->jonDoeRandomContent = $this->homePage->getCacheableElementRandomContent();
+        $this->johnCacheableCont = $this->homePage->getCacheableElementRandomContent();
+
+        $this->johnNotCacheableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
-     * @When Foo Bar visits the homepage after Jon Doe
+     * @When Foo Bar visits the homepage after John Doe
      */
-    public function fooBarVisitsHomePageAfterJonDoe(): void
+    public function fooBarVisitsHomePageAfterJohnDoe(): void
     {
         $this->homePage->open();
 
-        $this->fooBarRandomContent = $this->homePage->getCacheableElementRandomContent();
+        $this->fooCacheableCont = $this->homePage->getCacheableElementRandomContent();
+
+        $this->fooNotCacheableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
-     * @Then Foo Bar sees Jon Doe random content
+     * @Then Foo Bar sees John Doe cacheable content
      */
-
-    public function theHomePageCacheIsNotEmpty(): void
+    public function theHomePageCacheIsNotEmptyOnCacheableContent(): void
     {
         Assert::same(
-            $this->jonDoeRandomContent,
-            $this->fooBarRandomContent
+            $this->johnCacheableCont,
+            $this->fooCacheableCont,
         );
     }
 }
