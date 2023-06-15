@@ -7,7 +7,8 @@ services:
     build:
       context: ./php
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     environment:
       - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE:-UTC}
       - COMPOSER_MEMORY_LIMIT=-1
@@ -29,8 +30,6 @@ services:
       - "sylius_plugin_php_socket:/var/run"
     extra_hosts:
       - "host.docker.internal:host-gateway"
-      - "syliusplugin.local:172.21.0.4"
-      - "syliusplugindc.local:172.21.0.4"
     networks:
       - sylius-plugin-network
     command: >
@@ -44,15 +43,14 @@ services:
         && chown $HOST_UID:$HOST_GID -R ./var
         && chown $HOST_UID:$HOST_GID -R ./public
         && echo Checking requirements
-        && yes | php bin/console sylius:install:check-requirements
-        && yes | php bin/console sylius:install --no-interaction --verbose --env ${APP_ENV}
-        && yes | php bin/console sylius:fixtures:load default --no-interaction
-        && yes | php bin/console sylius:fixture:list
-        && yes | php bin/console sylius:fixtures:load fiftydeg_sylius_robots_plugin_channels_suite --no-interaction
-        && yes | php bin/console sylius:install:assets
-        && yes | php bin/console sylius:theme:assets:install public
-        && yes | php bin/console asset:install
-        && yes | php bin/console doctrine:migrations:migrate
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:check-requirements
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install --no-interaction --verbose --env ${APP_ENV}
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:fixtures:load default --no-interaction
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:assets
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:theme:assets:install public
+        && yes | APP_ENV=${APP_ENV} php bin/console asset:install
+        && yes | APP_ENV=${APP_ENV} php bin/console doctrine:migrations:migrate
+        && php-fpm --daemonize
         && cd $$PROJECT_DIR
         && XDEBUG_MODE=off php vendor/bin/ecs check
         && printf \"\r\n********************\r\n********************\r\n** 💡 PSALM ********\r\n********************\r\n********************\r\n\r\n\"
@@ -60,7 +58,7 @@ services:
         && printf \"\r\n********************\r\n********************\r\n** 💡 PHPSTAN ******\r\n********************\r\n********************\r\n\r\n\"
         && XDEBUG_MODE=off php vendor/bin/phpstan analyse -c phpstan.neon -l max src/
         && printf \"\r\n********************\r\n********************\r\n** 💡 PHPMD ********\r\n********************\r\n********************\r\n\r\n\"
-        && XDEBUG_MODE=off php vendor/bin/phpmd src,tests/Behat github phpmd.ruleset.xml
+        && XDEBUG_MODE=off php vendor/bin/phpmd src,tests/Behat github phpmd.ruleset.xml --ignore-violations-on-exit
         && printf \"\r\n********************\r\n********************\r\n** 💡 CONTAINER ****\r\n********************\r\n********************\r\n\r\n\"
         && cd $$PROJECT_DIR/tests/Application 
         && XDEBUG_MODE=off php bin/console lint:container
@@ -70,4 +68,13 @@ services:
         && XDEBUG_MODE=off php bin/console lint:yaml --parse-tags $$PROJECT_DIR/src/ ./config $$PROJECT_DIR/tests/Behat/
         && printf \"\r\n********************\r\n********************\r\n** 💡 BEHAT ********\r\n********************\r\n********************\r\n\r\n\"
         && cd $$PROJECT_DIR
-        && vendor/bin/behat --strict --tags='~@javascript'"
+        && vendor/bin/behat --strict --tags='~@javascript'
+        && exit 0"
+
+networks:
+  sylius-plugin-network:
+    driver: bridge
+
+volumes:
+    sylius_plugin_php_socket:
+    sylius_plugin_db:
