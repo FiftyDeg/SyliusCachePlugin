@@ -13,13 +13,13 @@ final class HomePageMissCacheContext implements Context
 {
     private $homePage;
 
-    private $jonCachableCont;
+    private $johnCacheableCont;
 
-    private $jonNotCachableCont;
+    private $johnNotCacheableCont;
 
-    private $fooCachableCont;
+    private $fooCacheableCont;
 
-    private $fooNotCachableCont;
+    private $fooNotCacheableCont;
 
     private $cacheAdapter;
 
@@ -32,15 +32,15 @@ final class HomePageMissCacheContext implements Context
     }
 
     /**
-     * @When Jon Doe visits the homepage
+     * @When John Doe visits the homepage
      */
-    public function jonDoeVisitsHomePage(): void
+    public function johnDoeVisitsHomePage(): void
     {
         $this->homePage->open();
 
-        $this->jonCachableCont = $this->homePage->getCacheableElementRandomContent();
+        $this->johnCacheableCont = $this->homePage->getCacheableElementRandomContent();
 
-        $this->jonNotCachableCont = $this->homePage->getNotCacheableElementRandomContent();
+        $this->johnNotCacheableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
@@ -52,25 +52,30 @@ final class HomePageMissCacheContext implements Context
     }
 
     /**
-     * @When Foo Bar visits the homepage after Jon Doe
+     * @When Foo Bar visits the homepage after John Doe
      */
-    public function fooBarVisitsHomePageAfterJonDoe(): void
+    public function fooBarVisitsHomePageAfterJohnDoe(): void
     {
         $this->homePage->open();
 
-        $this->fooCachableCont = $this->homePage->getCacheableElementRandomContent();
+        $this->fooCacheableCont = $this->homePage->getCacheableElementRandomContent();
 
-        $this->fooNotCachableCont = $this->homePage->getNotCacheableElementRandomContent();
+        $this->fooNotCacheableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
-     * @Then Foo Bar does not see Jon Doe cachable content
+     * @Then Foo Bar does not see John Doe cacheable content
      */
-    public function theHomePageCacheIsEmptyOnCachableContent(): void
+    public function fooBarDoesNotSeeJohnDoeCacheableContent(): void
     {
         Assert::notSame(
-            $this->jonCachableCont,
-            $this->fooCachableCont,
+            $this->johnCacheableCont,
+            $this->fooCacheableCont,
+        );
+
+        Assert::notSame(
+            $this->johnNotCacheableCont,
+            $this->fooNotCacheableCont,
         );
     }
 }

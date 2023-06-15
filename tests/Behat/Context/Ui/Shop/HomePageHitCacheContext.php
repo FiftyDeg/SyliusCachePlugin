@@ -11,13 +11,13 @@ use Webmozart\Assert\Assert;
 
 final class HomePageHitCacheContext implements Context
 {
-    private $jonCachableCont;
+    private $johnCacheableCont;
 
-    private $jonNotCachableCont;
+    private $johnNotCacheableCont;
 
-    private $fooCachableCont;
+    private $fooCacheableCont;
 
-    private $fooNotCachableCont;
+    private $fooNotCacheableCont;
 
     public function __construct(
         private HomePageInterface $homePage,
@@ -36,37 +36,37 @@ final class HomePageHitCacheContext implements Context
     }
 
     /**
-     * @When Jon Doe visits the homepage
+     * @When John Doe visits the homepage
      */
-    public function jonDoeVisitsHomePage(): void
+    public function johnDoeVisitsHomePage(): void
     {
         $this->homePage->open();
 
-        $this->jonCachableCont = $this->homePage->getCacheableElementRandomContent();
+        $this->johnCacheableCont = $this->homePage->getCacheableElementRandomContent();
 
-        $this->jonNotCachableCont = $this->homePage->getNotCacheableElementRandomContent();
+        $this->johnNotCacheableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
-     * @When Foo Bar visits the homepage after Jon Doe
+     * @When Foo Bar visits the homepage after John Doe
      */
-    public function fooBarVisitsHomePageAfterJonDoe(): void
+    public function fooBarVisitsHomePageAfterJohnDoe(): void
     {
         $this->homePage->open();
 
-        $this->fooCachableCont = $this->homePage->getCacheableElementRandomContent();
+        $this->fooCacheableCont = $this->homePage->getCacheableElementRandomContent();
 
-        $this->fooNotCachableCont = $this->homePage->getNotCacheableElementRandomContent();
+        $this->fooNotCacheableCont = $this->homePage->getNotCacheableElementRandomContent();
     }
 
     /**
-     * @Then Foo Bar sees Jon Doe cachable content
+     * @Then Foo Bar sees John Doe cacheable content
      */
-    public function theHomePageCacheIsNotEmptyOnCachableContent(): void
+    public function theHomePageCacheIsNotEmptyOnCacheableContent(): void
     {
         Assert::same(
-            $this->jonCachableCont,
-            $this->fooCachableCont,
+            $this->johnCacheableCont,
+            $this->fooCacheableCont,
         );
     }
 }

@@ -9,6 +9,6 @@ Feature: Hitting cache
 
     @ui
     Scenario: Fetch Sylius template event from cache
-        When Jon Doe visits the homepage
-        And Foo Bar visits the homepage after Jon Doe
-        Then Foo Bar sees Jon Doe cachable content
+        When John Doe visits the homepage
+        And Foo Bar visits the homepage after John Doe
+        Then Foo Bar sees John Doe cacheable content
