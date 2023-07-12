@@ -54,10 +54,8 @@ final class ConfigLoader implements ConfigLoaderInterface
 
     public function getBlockCacheTtl(string $eventName, string $blockName): int
     {
-        $ttl = 0;
-
         if (!$this->isCacheEnabled()) {
-            return $ttl;
+            return 0;
         }
 
         $templateEvents = $this->getTemplateEvents();
@@ -68,9 +66,9 @@ final class ConfigLoader implements ConfigLoaderInterface
                 continue;
             }
 
-            if (isset($eventCacheConfig['block_default_ttl'])) {
-                $ttl = (int) $eventCacheConfig['block_default_ttl'];
-            }
+            $ttl = (int) $eventCacheConfig['ttl'];
+
+            $blockDefaultTtl = (int) $eventCacheConfig['block_default_ttl'];
 
             $templateEventBlocks = $this->getTemplateEventBlocks($eventName);
 
@@ -80,11 +78,19 @@ final class ConfigLoader implements ConfigLoaderInterface
                     continue;
                 }
 
-                return (int) $templateEventBlock['ttl'];
+                if(isset($templateEventBlock['ttl'])) {
+                    return (int) $templateEventBlock['ttl'];
+                }
             }
+
+            if($blockDefaultTtl > 0) {
+                return (int) $blockDefaultTtl;
+            }
+
+            return (int) $ttl;
         }
 
-        return $ttl;
+        return 0;
     }
 
     private function getTemplateEvents(): array
