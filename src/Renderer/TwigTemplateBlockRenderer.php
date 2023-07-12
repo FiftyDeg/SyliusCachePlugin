@@ -26,7 +26,7 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
     public function render(TemplateBlock $templateBlock, array $context = []): string
     {
         $cacheTtl = $this->configLoader->getBlockCacheTtl($templateBlock->getEventName(), $templateBlock->getName());
-        $cacheKey = $this->dataSerializer->safelySerialize([$templateBlock->getName(), $context, $cacheTtl]);
+        $cacheKey = $this->dataSerializer->safelySerialize([$templateBlock->getEventName(), $templateBlock->getName(), $context, $cacheTtl]);
 
         /** @var string|null $cacheValue */
         $cacheValue = $this->cacheAdapter->get($cacheKey);
