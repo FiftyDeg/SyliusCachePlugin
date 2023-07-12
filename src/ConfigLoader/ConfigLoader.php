@@ -78,16 +78,16 @@ final class ConfigLoader implements ConfigLoaderInterface
                     continue;
                 }
 
-                if(isset($templateEventBlock['ttl'])) {
+                if (isset($templateEventBlock['ttl'])) {
                     return (int) $templateEventBlock['ttl'];
                 }
             }
 
-            if($blockDefaultTtl > 0) {
-                return (int) $blockDefaultTtl;
+            if ($blockDefaultTtl > 0) {
+                return $blockDefaultTtl;
             }
 
-            return (int) $ttl;
+            return $ttl;
         }
 
         return 0;
