@@ -67,7 +67,7 @@ services:
         && yes | APP_ENV=${APP_ENV} php bin/console sylius:theme:assets:install public
         && yes | APP_ENV=${APP_ENV} php bin/console asset:install
         && yes | APP_ENV=${APP_ENV} php bin/console doctrine:migrations:migrate
-        && php-fpm"
+        && yes | APP_ENV=${APP_ENV} php-fpm"
 
   nginx:
     container_name: "${COMPOSE_PROJECT_NAME}_nginx"
