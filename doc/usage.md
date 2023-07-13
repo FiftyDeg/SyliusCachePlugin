@@ -101,7 +101,7 @@ For example, if you want to cache the whole header and keep the dynamic behaviou
 ```
 
 **IMPORTANT:** If you do not want to use this feature, please, remember to disable the following block from sylius template events:
-```yaml
+```
 sylius_ui:
     events:
         sylius.shop.layout.javascripts:
@@ -111,6 +111,6 @@ sylius_ui:
 ```
 ### Flush cache
 You can flush the entire ecosystem cache via `php bin/console c:c` or you can flush just Fifty Deg cache by visiting `https://domain.com/admin/fiftydeg-cache/index/`  
----
+
 
 <a href="./customization.md" target="_blank">Next: Customization</a>
