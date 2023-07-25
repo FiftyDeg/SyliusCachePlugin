@@ -7,10 +7,10 @@ namespace FiftyDeg\SyliusCachePlugin\Renderer;
 use FiftyDeg\SyliusCachePlugin\Adapters\CacheAdapterInterface;
 use FiftyDeg\SyliusCachePlugin\ConfigLoader\ConfigLoaderInterface;
 use FiftyDeg\SyliusCachePlugin\Services\DataSerializerInterface;
+use Sylius\Bundle\CoreBundle\SyliusCoreBundle;
 use Sylius\Bundle\UiBundle\ContextProvider\ContextProviderInterface;
 use Sylius\Bundle\UiBundle\Registry\TemplateBlock;
 use Sylius\Bundle\UiBundle\Renderer\TemplateBlockRendererInterface;
-use Sylius\Bundle\CoreBundle\Application\Kernel as SyliusKernel;
 use Twig\Environment;
 
 final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
@@ -36,7 +36,7 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
             return $cacheValue;
         }
 
-        if (strpos(SyliusKernel::VERSION, '1.12') === 0 && interface_exists(ContextProviderInterface::class)) {
+        if (strpos(SyliusCoreBundle::VERSION, '1.12') === 0 && interface_exists(ContextProviderInterface::class)) {
             // Sylius v1.12
             foreach ($this->contextProviders as $contextProvider) {
                 if (!$contextProvider instanceof ContextProviderInterface || !$contextProvider->supports($templateBlock)) {
