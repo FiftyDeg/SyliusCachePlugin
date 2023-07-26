@@ -15,7 +15,7 @@ fifty_deg_sylius_cache_plugin:
     resource: "@FiftyDegSyliusCachePlugin/Resources/config/routes.yaml"
 ```
 
-4. Import Webpack settings from `vendors/fifty-deg/sylius-cache-plugin/webpack.config.js` in your `webpack.config.js` file.
+4. Import Webpack settings from `./vendor/fifty-deg/sylius-cache-plugin/webpack.config` in your `webpack.config.js` file.
 ```js
 const [
     fiftyDegSyliusCachePluginAdmin, 
