@@ -36,7 +36,7 @@ final class TwigTemplateBlockRenderer implements TemplateBlockRendererInterface
             return $cacheValue;
         }
 
-        if (SyliusCoreBundle::VERSION_ID >= '112' && interface_exists(ContextProviderInterface::class)) {
+        if (strcmp(SyliusCoreBundle::VERSION_ID, '112') >= 0 && interface_exists(ContextProviderInterface::class)) {
             // Sylius v1.12
             foreach ($this->contextProviders as $contextProvider) {
                 if (!$contextProvider instanceof ContextProviderInterface || !$contextProvider->supports($templateBlock)) {
