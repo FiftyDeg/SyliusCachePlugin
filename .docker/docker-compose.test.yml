@@ -50,7 +50,7 @@ services:
         && yes | APP_ENV=${APP_ENV} php bin/console sylius:theme:assets:install public
         && yes | APP_ENV=${APP_ENV} php bin/console asset:install
         && yes | APP_ENV=${APP_ENV} php bin/console doctrine:migrations:migrate
-        && php-fpm --daemonize
+        && yes | APP_ENV=${APP_ENV} php-fpm --daemonize
         && cd $$PROJECT_DIR
         && XDEBUG_MODE=off php vendor/bin/ecs check
         && printf \"\r\n********************\r\n********************\r\n** 💡 PSALM ********\r\n********************\r\n********************\r\n\r\n\"
