@@ -1,0 +1,80 @@
+version: "3"
+services:
+  
+  php:
+    container_name: "${COMPOSE_PROJECT_NAME}_php"
+    # user: $HOST_UID:$HOST_GID
+    build:
+      context: ./php
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE:-UTC}
+      - COMPOSER_MEMORY_LIMIT=-1
+      - PHP_INI_MEMORY_LIMIT=2G
+      - PHP_INI_ERROR_REPORTING=E_ALL
+      - COMPOSER_HOME=$HOME/.config/composer
+    expose:
+      - 9000
+    volumes:
+      - ../:/var/www/html
+      - ./php/volumes/usr/local/etc/php/conf.d/99-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./php/volumes/usr/local/etc/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+      - ./php/volumes/usr/local/etc/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./php/volumes/usr/local/etc/php/conf.d/php-cli.ini:/usr/local/etc/php/conf.d/php-cli.ini
+      - ./php/volumes/usr/local/etc/php/pool.d/docker.conf:/usr/local/etc/php/pool.d/docker.conf
+      - /usr/local/etc/php
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - "sylius_plugin_php_socket:/var/run"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - sylius-plugin-network
+    command: >
+        bash -c
+        "PROJECT_DIR=$$(pwd)
+        && echo $$PROJECT_DIR
+        && composer install --no-interaction --no-scripts
+        && chown $HOST_UID:$HOST_GID -R ./vendor
+        && cd $$PROJECT_DIR/tests/Application
+        && mkdir -p ./var/log ./var/cache ./public/media/cache ./public/media/image
+        && chown $HOST_UID:$HOST_GID -R ./var
+        && chown $HOST_UID:$HOST_GID -R ./public
+        && echo Checking requirements
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:check-requirements
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install --no-interaction --verbose --env ${APP_ENV}
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:fixtures:load default --no-interaction
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:assets
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:theme:assets:install public
+        && yes | APP_ENV=${APP_ENV} php bin/console asset:install
+        && yes | APP_ENV=${APP_ENV} php bin/console doctrine:migrations:migrate
+        && yes | APP_ENV=${APP_ENV} php-fpm --daemonize
+        && cd $$PROJECT_DIR
+        && XDEBUG_MODE=off php vendor/bin/ecs check
+        && printf \"\r\n********************\r\n********************\r\n** 💡 PSALM ********\r\n********************\r\n********************\r\n\r\n\"
+        && XDEBUG_MODE=off php vendor/bin/psalm --no-cache
+        && printf \"\r\n********************\r\n********************\r\n** 💡 PHPSTAN ******\r\n********************\r\n********************\r\n\r\n\"
+        && XDEBUG_MODE=off php vendor/bin/phpstan analyse -c phpstan.neon -l max src/
+        && printf \"\r\n********************\r\n********************\r\n** 💡 PHPMD ********\r\n********************\r\n********************\r\n\r\n\"
+        && XDEBUG_MODE=off php vendor/bin/phpmd src,tests/Behat github phpmd.ruleset.xml --ignore-violations-on-exit
+        && printf \"\r\n********************\r\n********************\r\n** 💡 CONTAINER ****\r\n********************\r\n********************\r\n\r\n\"
+        && cd $$PROJECT_DIR/tests/Application 
+        && XDEBUG_MODE=off php bin/console lint:container
+        && printf \"\r\n********************\r\n********************\r\n** 💡 TWIG *********\r\n********************\r\n********************\r\n\r\n\"
+        && XDEBUG_MODE=off php bin/console lint:twig $$PROJECT_DIR/src/* ./* $$PROJECT_DIR/tests/Behat/*
+        && printf \"\r\n********************\r\n********************\r\n** 💡 YAML *********\r\n********************\r\n********************\r\n\r\n\"
+        && XDEBUG_MODE=off php bin/console lint:yaml --parse-tags $$PROJECT_DIR/src/ ./config $$PROJECT_DIR/tests/Behat/
+        && printf \"\r\n********************\r\n********************\r\n** 💡 BEHAT ********\r\n********************\r\n********************\r\n\r\n\"
+        && cd $$PROJECT_DIR
+        && vendor/bin/behat --strict --tags='~@javascript'
+        && exit 0"
+
+networks:
+  sylius-plugin-network:
+    driver: bridge
+
+volumes:
+    sylius_plugin_php_socket:
+    sylius_plugin_db:

@@ -1,0 +1,4 @@
+suites:
+    main:
+        namespace: FiftyDeg\SyliusCachePlugin
+        psr4_prefix: FiftyDeg\SyliusCachePlugin

@@ -1,0 +1,30 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "rules": {
+        "no-undef": 0,
+        "no-unused-vars": 0,
+        "camelcase": 1,
+        "comma-dangle": 2,
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "indent": [
+            "error",
+            4
+        ],
+        "no-control-regex": 0,
+        "no-useless-escape": 0
+    }
+}

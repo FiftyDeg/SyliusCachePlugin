@@ -1,0 +1,7 @@
+services:
+    fifty_deg.sylius_cache_plugin.controller.cache_flusher_controller:
+        class: FiftyDeg\SyliusCachePlugin\Controller\CacheFlusherController
+        arguments:
+            - "@fifty_deg.sylius_cache_plugin.adapters.cache_adapter"
+            - "@twig"
+        tags: [controller.service_arguments]

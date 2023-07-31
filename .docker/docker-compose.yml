@@ -1,0 +1,118 @@
+version: "3"
+services:
+
+  mysql:
+    container_name: "${COMPOSE_PROJECT_NAME}_mysql"
+    build:
+      context: ./mysql
+    environment:
+      - MYSQL_DATABASE=${COMPOSE_PROJECT_NAME}_mysql
+      - MYSQL_ROOT_PASSWORD=mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - sylius_plugin_db:/var/lib/mysql:rw
+    networks:
+      - sylius-plugin-network
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        timeout: 5s
+        retries: 10
+
+  php:
+    container_name: "${COMPOSE_PROJECT_NAME}_php"
+    user: $HOST_UID:$HOST_GID
+    build:
+      context: ./php
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE:-UTC}
+      - COMPOSER_MEMORY_LIMIT=-1
+      - PHP_INI_MEMORY_LIMIT=2G
+      - PHP_INI_ERROR_REPORTING=E_ALL
+      - COMPOSER_HOME=$HOME/.config/composer
+      - CONTAINER_NAME=${COMPOSE_PROJECT_NAME}_nginx
+    expose:
+      - 9000
+    volumes:
+      - ../:/var/www/html
+      - ./php/volumes/usr/local/etc/php/conf.d/99-xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./php/volumes/usr/local/etc/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+      - ./php/volumes/usr/local/etc/php/conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./php/volumes/usr/local/etc/php/conf.d/php-cli.ini:/usr/local/etc/php/conf.d/php-cli.ini
+      - ./php/volumes/usr/local/etc/php/pool.d/docker.conf:/usr/local/etc/php/pool.d/docker.conf
+      - /usr/local/etc/php
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - "sylius_plugin_php_socket:/var/run"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - sylius-plugin-network
+    command: >
+        bash -c
+        "composer install --no-interaction --no-scripts
+        && chown $HOST_UID:$HOST_GID -R ./vendor 
+        && cd ./tests/Application
+        && mkdir -p ./var/log ./var/cache ./public/media/cache ./public/media/image
+        && chown $HOST_UID:$HOST_GID -R ./var
+        && chown $HOST_UID:$HOST_GID -R ./public
+        && echo Checking requirements
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:check-requirements
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install --no-interaction --verbose --env ${APP_ENV}
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:fixtures:load default --no-interaction
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:install:assets
+        && yes | APP_ENV=${APP_ENV} php bin/console sylius:theme:assets:install public
+        && yes | APP_ENV=${APP_ENV} php bin/console asset:install
+        && yes | APP_ENV=${APP_ENV} php bin/console doctrine:migrations:migrate
+        && yes | APP_ENV=${APP_ENV} php-fpm"
+
+  nginx:
+    container_name: "${COMPOSE_PROJECT_NAME}_nginx"
+    build:
+      context: ./nginx
+    links:
+      - php
+      - mysql
+    volumes:
+      - ../:/var/www/html
+      - ./nginx/volumes/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
+      - ./nginx/volumes/etc/ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
+      - ./nginx/volumes/etc/nginx/conf.d/:/etc/nginx/conf.d
+      - ./nginx/volumes/var/log/nginx:/var/log/nginx
+      - "sylius_plugin_php_socket:/var/run"
+    depends_on:
+      - php
+    ports:
+      - "80:80"
+      - "443:443"
+    command: ["nginx", "-g", "daemon off;"]
+    networks:
+      - sylius-plugin-network
+
+  node:
+    container_name: "${COMPOSE_PROJECT_NAME}_node"
+    user: $HOST_UID:$HOST_GID
+    build:
+      context: ./node
+    volumes:
+      - ../:/src/
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    depends_on:
+      - php
+    command: >
+        bash -c 
+        "cd ./tests/Application 
+        && yarn 
+        && GULP_ENV=prod yarn watch"
+
+networks:
+  sylius-plugin-network:
+    driver: bridge
+
+volumes:
+    sylius_plugin_php_socket:
+    sylius_plugin_db:

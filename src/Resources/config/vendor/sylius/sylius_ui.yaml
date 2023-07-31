@@ -1,0 +1,13 @@
+sylius_ui:
+    events:
+        sylius.admin.layout.javascripts:
+            blocks:
+                fiftydeg_cache_scripts:
+                    template: "@FiftyDegSyliusCachePlugin/Admin/_scripts.html.twig"
+                    priority: 10
+ 
+        sylius.shop.layout.javascripts:
+            blocks:
+                fiftydeg_cache_scripts:
+                    template: "@FiftyDegSyliusCachePlugin/Shop/_scripts.html.twig"
+                    priority: 10

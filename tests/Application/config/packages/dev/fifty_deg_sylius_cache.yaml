@@ -1,0 +1,12 @@
+fifty_deg_sylius_cache:
+  is_cache_enabled: true
+  template_events:
+
+    - name: sylius.shop.layout.header
+      block_default_ttl: 86400
+      blocks:
+        - name: header
+          ttl: 3600
+
+    - name: sylius.shop.layout.footer
+      ttl: 86400

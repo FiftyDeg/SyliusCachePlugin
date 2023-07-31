@@ -1,0 +1,10 @@
+services:
+
+    sylius.twig.extension.template_event:
+        class: FiftyDeg\SyliusCachePlugin\Twig\TemplateEventExtension
+        arguments:
+            - "@Sylius\\Bundle\\UiBundle\\Renderer\\TemplateEventRendererInterface"
+            - "@fifty_deg.sylius_cache_plugin.adapters.cache_adapter"
+            - "@fifty_deg.sylius_cache_plugin.config_loader.config_loader"
+            - "@fifty_deg.sylius_cache_plugin.fifty_deg.services.data_serializer"
+        tags: [ 'twig.extension' ]

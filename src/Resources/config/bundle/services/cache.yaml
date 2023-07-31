@@ -1,0 +1,11 @@
+services:
+    fifty_deg.sylius_cache_plugin.adapters.cache_adapter:
+        class: FiftyDeg\SyliusCachePlugin\Adapters\FilesystemCacheAdapter
+        arguments:
+            $channelContext: '@sylius.context.channel'
+            $localeContext: '@sylius.context.locale'
+            $env: '%kernel.environment%'
+            $cacheDir: '%kernel.project_dir%'
+            $namespace: 'FiftyDegSyliusCache'
+            $defaultTtl: 3600
+
