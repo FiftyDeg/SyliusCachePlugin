@@ -1,19 +1,19 @@
 services:
     _defaults: { public: true }
 
-    fiftydeg_sylius_cache_plugin.behat.page.shop.home_page:
+    fifty_deg_sylius_cache_plugin.behat.page.shop.home_page:
         class: Tests\FiftyDeg\SyliusCachePlugin\Behat\Page\Shop\HomePage
         parent: sylius.behat.symfony_page
         public: false
 
-    fiftydeg_sylius_cache_plugin.context.ui.shop.home_page_hit_cache_context:
+    fifty_deg_sylius_cache_plugin.context.ui.shop.home_page_hit_cache_context:
         class: Tests\FiftyDeg\SyliusCachePlugin\Behat\Context\Ui\Shop\HomePageHitCacheContext
         arguments:
-            - "@fiftydeg_sylius_cache_plugin.behat.page.shop.home_page"
+            - "@fifty_deg_sylius_cache_plugin.behat.page.shop.home_page"
             - "@fifty_deg.sylius_cache_plugin.adapters.cache_adapter"
 
-    fiftydeg_sylius_cache_plugin.context.ui.shop.home_page_miss_cache_context:
+    fifty_deg_sylius_cache_plugin.context.ui.shop.home_page_miss_cache_context:
         class: Tests\FiftyDeg\SyliusCachePlugin\Behat\Context\Ui\Shop\HomePageMissCacheContext
         arguments:
-            - "@fiftydeg_sylius_cache_plugin.behat.page.shop.home_page"
+            - "@fifty_deg_sylius_cache_plugin.behat.page.shop.home_page"
             - "@fifty_deg.sylius_cache_plugin.adapters.cache_adapter"

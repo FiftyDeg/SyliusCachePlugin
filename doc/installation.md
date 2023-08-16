@@ -12,7 +12,9 @@ composer require fifty-deg/sylius-cache-plugin
 3. Register routes and vendor settings by adding the following code snippet in `config/routes.yaml`:  
 ```yaml
 fifty_deg_sylius_cache_plugin:
-    resource: "@FiftyDegSyliusCachePlugin/Resources/config/routes.yaml"
+    resource: "@FiftyDegSyliusCachePlugin/Resources/config/routes/routes.yaml"
+
+    resource: '@FiftyDegSyliusCachePlugin/Resources/config/config.yaml'
 ```
 
 4. Import Webpack settings from `./vendor/fifty-deg/sylius-cache-plugin/webpack.config` in your `webpack.config.js` file.

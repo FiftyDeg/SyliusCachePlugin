@@ -11,23 +11,27 @@
 			<h1 class="ui header">
 				<i class="circular disk icon"></i>
 				<div class="content">
-					Flush cache
-					<div class="sub header">Tools to flush FiftyDeg Custom Cache</div>
+					{{ 'fifty_deg_sylius_cache.ui.flush'|trans }}
+					<div class="sub header">{{ 'fifty_deg_sylius_cache.ui.tools_to_flush_cache'|trans }}</div>
 				</div>
 			</h1>
 		</div>
 		<div class="twelve wide column">
 			<div class="ui error message">
 				<h6 class="header">
-					Please, use these functionalities carefully.
+				{{ app.request.locale|locale_name(app.request.locale) }}
+					{{ 'fifty_deg_sylius_cache.ui.please_use_carefully'|trans }}
 				</h6>
                 <p>
-				    Flush cache only if strictly necessary.
+					{{ 'fifty_deg_sylius_cache.ui.use_only_if_necessary'|trans }}
                 </p>
 			</div>
+
+			
+		
 		</div>
 		<div class="twelve wide column">
-            <button type="button" class="ui red button js__flushCacheButton" data-flush-cache-url="{{ url('app_admin_fifty_deg_cache_flusher_ajax') }}">Flush Cache</button>
+            <button type="button" class="ui red button js__flushCacheButton" data-flush-cache-url="{{ url('app_admin_fifty_deg_cache_flusher_ajax') }}">{{ 'fifty_deg_sylius_cache.ui.flush'|trans }}</button>
             <div class="js__flushCacheResponse">
             </div>
         </div>

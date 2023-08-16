@@ -106,11 +106,11 @@ sylius_ui:
     events:
         sylius.shop.layout.javascripts:
             blocks:
-                fiftydeg_cache_scripts:
+                fifty_deg_cache_scripts:
                     enabled: false
 ```
 ### Flush cache
-You can flush the entire ecosystem cache via `php bin/console c:c` or you can flush just Fifty Deg cache by visiting `https://domain.com/admin/fiftydeg-cache/index/`  
+You can flush the entire ecosystem cache via `php bin/console c:c` or you can flush just Fifty Deg cache by visiting `https://domain.com/admin/fifty-deg-cache/index/`  
 
 
 <a href="./customization.md" target="_blank">Next: Customization</a>

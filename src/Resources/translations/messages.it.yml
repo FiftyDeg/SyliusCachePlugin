@@ -1,0 +1,8 @@
+fifty_deg_sylius_cache:
+  ui:
+    cache: Cache
+    flusher: Flusher
+    flush: Flush cache
+    tools_to_flush_cache: Strumenti per ripulire la cache
+    please_use_carefully: Perfavore, usa queste funzionlità con attenzione
+    use_only_if_necessary: Ripulisci la cache solo se necessario

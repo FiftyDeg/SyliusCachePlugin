@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace FiftyDeg\SyliusCachePlugin\Adapters;
 
 use Exception;
-use Sylius\Component\Channel\Context\ChannelContextInterface;
-use Sylius\Component\Locale\Context\LocaleContextInterface;
+use FiftyDeg\SyliusCachePlugin\Processor\Utilities;
 use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
 use Symfony\Component\Cache\CacheItem;
 
@@ -16,8 +15,7 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
     private $cache;
 
     public function __construct(
-        private ChannelContextInterface $channelContext,
-        private LocaleContextInterface $localeContext,
+        private Utilities $utilities,
         private string $env,
         private string $cacheDir,
         private string $namespace,
@@ -40,7 +38,7 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
     public function set(string $key, mixed $value, ?int $expiresAfter = null): bool
     {
         try {
-            $hashedKey = $this->hashKey($key);
+            $hashedKey = $this->utilities->hashKey($key);
             $cacheItem = $this->cache->getItem($hashedKey);
 
             $cacheItem->set($value);
@@ -57,7 +55,7 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
 
     public function get(string $key): mixed
     {
-        $hashedKey = $this->hashKey($key);
+        $hashedKey = $this->utilities->hashKey($key);
 
         $cacheItem = $this->cache->getItem($hashedKey);
 
@@ -88,18 +86,5 @@ final class FilesystemCacheAdapter implements CacheAdapterInterface
     public function getCache(): ?FilesystemTagAwareAdapter
     {
         return $this->cache;
-    }
-
-    private function hashKey(string $key): string
-    {
-        $channelCode = $this->channelContext->getChannel()->getCode();
-        if (null === $channelCode) {
-            $channelCode = '';
-        }
-        $localeCode = $this->localeContext->getLocaleCode();
-
-        $key = $channelCode . '__' . $localeCode . '__' . $key;
-
-        return hash('md5', $key);
     }
 }

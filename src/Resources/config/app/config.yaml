@@ -1,0 +1,5 @@
+imports:
+    - { resource: "./assets.yaml" }
+    - { resource: "./sylius_events.yaml" }
+    - { resource: "./sylius_ui.yaml" }
+    - { resource: "./webpack_encore.yaml" }

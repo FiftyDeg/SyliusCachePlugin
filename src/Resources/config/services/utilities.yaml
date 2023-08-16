@@ -4,3 +4,10 @@ services:
         arguments:
             - "@fifty_deg.sylius_cache_plugin.config_loader.config_loader"
             - "@fifty_deg.sylius_cache_plugin.adapters.cache_adapter"
+
+    fifty_deg.sylius_cache_plugin.processor.utilities:
+        class: FiftyDeg\SyliusCachePlugin\Processor\Utilities
+        arguments:
+            $channelContext: '@sylius.context.channel'
+            $localeContext: '@sylius.context.locale'
+
