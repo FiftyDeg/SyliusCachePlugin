@@ -26,15 +26,17 @@
 					{{ 'fifty_deg_sylius_cache.ui.use_only_if_necessary'|trans }}
                 </p>
 			</div>
-
-			
-		
 		</div>
 		<div class="twelve wide column">
             <button type="button" class="ui red button js__flushCacheButton" data-flush-cache-url="{{ url('app_admin_fifty_deg_cache_flusher_ajax') }}">{{ 'fifty_deg_sylius_cache.ui.flush'|trans }}</button>
             <div class="js__flushCacheResponse">
             </div>
         </div>
+		<div class="transition hidden">
+			<div class="flushing-cache">{{ 'fifty_deg_sylius_cache.ui.flushing_cache'|trans }}</div>
+			<div class="cache-cleared-successfully">{{ 'fifty_deg_sylius_cache.ui.cache_cleared_successfully'|trans }}</div>
+			<div class="something-went-wrong">{{ 'fifty_deg_sylius_cache.ui.something_went_wrong'|trans }}</div>
+		</div>
 	</div>
 {% endblock %}
 

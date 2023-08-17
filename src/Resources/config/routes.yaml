@@ -1,0 +1,2 @@
+app_file:
+    resource: './routes/admin_routes.yaml'

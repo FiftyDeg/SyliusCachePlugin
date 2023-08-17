@@ -17,10 +17,17 @@ final class Utilities
 
     public function hashKey(string $key): string
     {
-        $channelCode = $this->channelContext->getChannel()->getCode();
+        $channelCode = '';
+
+        try {
+            $channelCode = $this->channelContext->getChannel()->getCode();
+        } catch(\Exception $e) {
+        }
+
         if (null === $channelCode) {
             $channelCode = '';
         }
+
         $localeCode = $this->localeContext->getLocaleCode();
 
         $key = $channelCode . '__' . $localeCode . '__' . $key;

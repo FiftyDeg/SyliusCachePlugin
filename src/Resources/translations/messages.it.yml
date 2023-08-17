@@ -6,3 +6,6 @@ fifty_deg_sylius_cache:
     tools_to_flush_cache: Strumenti per ripulire la cache
     please_use_carefully: Perfavore, usa queste funzionlità con attenzione
     use_only_if_necessary: Ripulisci la cache solo se necessario
+    flushing_cache: Cache in fase di cancellazione...
+    cache_cleared_successfully: Cache eliminata con successo
+    something_went_wrong: Qualcosa non ha funzionato correttamente

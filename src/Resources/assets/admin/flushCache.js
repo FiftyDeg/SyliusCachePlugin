@@ -4,6 +4,9 @@ export default class FlushCache {
     constructor() {
         this.$flushCacheButton = jquery('.js__flushCacheButton');
         this.$flushCacheResponse = jquery('.js__flushCacheResponse');
+        this.$flushCacheText = jquery('.flushing-cache');
+        this.$clearCacheSuccessfullyText = jquery('.cache-cleared-successfully');
+        this.$somethingWentWrongText = jquery('.something-went-wrong');
 
         this.messageTimer = 0;
     }
@@ -46,20 +49,20 @@ export default class FlushCache {
         $flushCacheButton.addClass('loading');
         $flushCacheButton.prop('disabled', true);
 
-        this.setResponseMessage('<p>Flushing cache...</p>', 0);
+        this.setResponseMessage('<p>' + this.$flushCacheText.html() + '...</p>', 0);
 
         jquery
             .post(endpoint)
             .then((res) => {
                 const { success } = res;
                 const message = success
-                    ? 'Cache cleared successfully!'
-                    : 'Something went wrong.';
+                    ? this.$clearCacheSuccessfullyText.html()
+                    : this.$somethingWentWrongText.html()
 
                 this.setResponseMessage(`<p>${message}</p>`);
             })
             .catch((err) => {
-                const message = err.message || 'Something went wrong.';
+                const message = err.message || this.$somethingWentWrongText.html();
 
                 this.setResponseMessage(`<p>${message}</p>`);
             })
