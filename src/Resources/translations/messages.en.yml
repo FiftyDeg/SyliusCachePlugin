@@ -1,0 +1,11 @@
+fifty_deg_sylius_cache:
+  ui:
+    cache: Cache
+    flusher: Flusher
+    flush: Flush cache
+    tools_to_flush_cache: Tools to flush FiftyDeg Custom Cache
+    please_use_carefully: Please, use these functionalities carefully
+    use_only_if_necessary: Flush cache only if strictly necessary
+    flushing_cache: Flushing cache...
+    cache_cleared_successfully: Cache cleared successfully
+    something_went_wrong: Something went wrong

@@ -3,11 +3,11 @@ sylius_ui:
         sylius.admin.layout.javascripts:
             blocks:
                 fiftydeg_cache_scripts:
-                    template: "@FiftyDegSyliusCachePlugin/Admin/_scripts.html.twig"
+                    template: "@FiftyDegSyliusCachePlugin/Admin/Layout/_scripts.html.twig"
                     priority: 10
  
         sylius.shop.layout.javascripts:
             blocks:
                 fiftydeg_cache_scripts:
-                    template: "@FiftyDegSyliusCachePlugin/Shop/_scripts.html.twig"
+                    template: "@FiftyDegSyliusCachePlugin/Shop/Layout/_scripts.html.twig"
                     priority: 10

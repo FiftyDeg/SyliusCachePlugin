@@ -24,7 +24,8 @@ final class FiftyDegSyliusCacheExtension extends Extension
         $configs = $this->processConfiguration($process, $configs);
         $fileLocator = new FileLocator(__DIR__ . '/../Resources/config');
         $loader = new YamlFileLoader($container, $fileLocator);
-        $loader->load('config_bundle.yaml');
+
+        $loader->load('services.yaml');
 
         foreach ($configs as $key => $param) {
             /** @var string $key */
